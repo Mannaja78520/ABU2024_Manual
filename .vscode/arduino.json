@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "port": "/dev/ttyUSB0",
+    "programmer": "avrisp",
+    "sketch": "ABU2024_Manual.ino"
+}
