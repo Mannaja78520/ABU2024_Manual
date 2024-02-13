@@ -1,9 +1,9 @@
 // Test File
 
 #include <Arduino.h>
-#include <Servo.h>
 #include <stdio.h>
 
+#include <Servo.h>
 
 void setup() {
 
