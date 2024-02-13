@@ -1,6 +1,6 @@
 {
-    "board": "arduino:avr:uno",
-    "port": "/dev/ttyUSB0",
-    "programmer": "avrisp",
-    "sketch": "main/main.ino"
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega",
+    "sketch": "main/main.ino",
+    "programmer": "avrispmkii"
 }
