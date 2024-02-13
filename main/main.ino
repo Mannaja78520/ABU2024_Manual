@@ -1,8 +1,8 @@
 #include <Arduino.h>
+#include <Servo.h>
 #include <stdio.h>
 
 void setup() {
-  millis();
 
 }
 
