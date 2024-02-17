@@ -1,4 +1,5 @@
 #include "src/Utilize.h"
+#include "src/Robot.h"
 #include "src/RobotAnalysis/RobotAnalysis.h"
 #include "src/Communicate/Communicate.h"
 #include "src/Movement/Movement.h"
