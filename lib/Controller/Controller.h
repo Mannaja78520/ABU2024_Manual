@@ -2,9 +2,9 @@
 #define CONTROLLER_H
 
 class Controller{
+    double Dt, Integral, CurrentTime, LastTime;
     public:
         double Kp, Ki, Kd, Kf, Setpoint, Error, LastError;
-        double Dt, Integral, LastTime;
         Controller(double, double, double, double);
         void setPIDF(float, float, float, float);
         double Calculate(double);
