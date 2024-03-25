@@ -16,7 +16,7 @@ Movement:
 
 RobotAnalysis:
 - หาวิธีใช้ IMU GY-91 แล้วทำ Variable Yaw, Pitch, Roll เป็น Public คำนวนค่าให้เรียบร้อยแบบ RealTime
-- ทำระบบ Controller PID
+- ทำระบบ Controller PIDF
 - ทำงานร่วมกับฝ่าย Movement ในการทำสมการเดินของหุ่นยนต์
 
 Harvest:
