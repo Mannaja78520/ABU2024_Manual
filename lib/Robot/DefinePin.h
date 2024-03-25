@@ -24,12 +24,12 @@ const byte PIN_PS2_CLK = 13;
 #define motor3PinB  29
 
 // ServoPin
-#define Servo0 6
-#define Servo1 7
-#define Servo2 8
-#define Servo3 9
-#define Servo4 10
-#define Servo5 11
+#define Servo0 13
+#define Servo1 12
+#define Servo2 11
+#define Servo3 10
+#define Servo4 9
+#define Servo5 8
 
 // Solenoid
 #define Solenoid0 49
