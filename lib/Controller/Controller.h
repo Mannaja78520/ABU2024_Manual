@@ -1,14 +1,19 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef Controller_h
+#define Controller_h
 
-class Controller{
-    double Dt, Integral, CurrentTime, LastTime;
-    public:
-        double Kp, Ki, Kd, Kf, Setpoint, Error, LastError;
-        Controller(double, double, double, double);
-        void setPIDF(float, float, float, float);
-        double Calculate(double);
-        double Calculate(double, double);
+#include <Arduino.h>
+
+class Controller {
+  private:
+    unsigned long long LastTime;
+  public:
+    float Kp, Ki, Kd, Kf, Setpoint, Error, LastError;
+    float Dt, Integral;
+    static byte SigNum(float number);
+    Controller(float, float, float, float);
+    void setPIDF(float, float, float, float);
+    float Calculate(float, float);
+    float Calculate(float);
 };
 
 #endif

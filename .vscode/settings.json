@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "istream": "cpp",
+        "ios": "cpp",
+        "cmath": "cpp"
+    }
+}

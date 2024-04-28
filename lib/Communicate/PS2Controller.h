@@ -131,9 +131,8 @@ PsxControllerBitBang<PIN_PS2_ATT, PIN_PS2_CMD, PIN_PS2_DAT, PIN_PS2_CLK> psx;
 boolean haveController = false;
  
 
-class Communicate{
+class Joystick{
     public:
-        // Communicate();
         void init(){
             Serial.begin (115200);
             Serial.println (F("Ready!"));

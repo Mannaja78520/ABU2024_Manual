@@ -3,19 +3,18 @@
 
 class MotorInterface
 {
-    bool invert_, brakemotor_;
+    bool invert_;
 
 protected:
     virtual void forward(int pwm) = 0;
     virtual void reverse(int pwm) = 0;
 
 public:
-    MotorInterface(int invert, int brakemotortype) : invert_(invert), brakemotor_(brakemotortype)
+    MotorInterface(int invert) : invert_(invert)
     {
     }
 
     virtual void brake() = 0;
-    virtual void floatmotor() = 0;
     void spin(int pwm)
     {
         if (invert_)
@@ -25,12 +24,8 @@ public:
             forward(pwm);
         else if (pwm < 0)
             reverse(pwm);
-        else {
-            if (brakemotor_)
-                brake();
-            else 
-                floatmotor();
-        }
+        else
+            brake();
     }
 };
 

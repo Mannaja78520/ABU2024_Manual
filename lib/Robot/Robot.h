@@ -5,23 +5,47 @@
 #include <stdio.h>
 #include <Wire.h>
 
+#include <Movement.h>
+#include <Harvest.h>
+#include <Ball.h>
+#include <RobotAnalysis.h>
+#include <Communicate.h>
+#include <Utilize.h>
+
+DataFromZigbeeJoystickXbox gamepad;
+TransferData t;
+// DataFromZigbeeJoystickPlayStation gamepad;
+
 class Robot{
+  Movement m;
+  Harvest h;
+  Ball b;
+  RobotAnalysis ra;
+
   public:
     void init(){
-      // Grip0.attach(Servo0);
-      // Grip1.attach(Servo1);
-      // Grip2.attach(Servo2);
-      // Grip3.attach(Servo3);
+      Serial.begin(115200);
+      ra.init();
+      
+      h.init();
+      b.init();
+      
+      gamepad.init();
+      delay(200);
+      Serial.println ("Ready!");
+    }
 
-      // Grip0.write(0);
-      // Grip1.write(0);
-      // Grip2.write(0);
-      // Grip3.write(0);
+    void MovePower(int motor1Speed, int motor2Speed, int motor3Speed){
+      m.MovePower(motor1Speed, motor2Speed, motor3Speed);
+    }
+    
+    void BallSpin(int SpinSpeed){
+      b.BallSpin(SpinSpeed);
+    }
 
-      // pinMode(GripUp, OUTPUT);
-      // pinMode(Solenoid1, OUTPUT);
-      // pinMode(Solenoid2, OUTPUT);
-      // pinMode(Solenoid3, OUTPUT);
+    void loop(){
+      ra.loop();
+      gamepad.readData();
     }
 };
 
