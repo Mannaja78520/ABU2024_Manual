@@ -1,18 +1,24 @@
-#include <Robot.h>
-// #include <Arduino.h>
-// #include <Servo.h>
+// #include <Robot.h>
+#include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Servo.h>
 
 int grip1Val = 0, grip2Val = 0, grip3Val = 0, grip4Val = 0, 
-UpDownVal = 180, LeftVal = 0, RightVal = 180;
+UpDownVal = 0, LeftVal = 0, RightVal = 180;
 
-Robot r;
+// Robot r;
+
+Servo BallUp_Down;
 
 void setup(){
-    r.init();
+    // r.init();
+    BallUp_Down.attach(7);
+    BallUp_Down.write(UpDownVal);
 }
 
 void loop(){
-    r.loop();
+    // r.loop();
     // r.BallSpin(255);
 
     // Grip1 is servo3
@@ -72,5 +78,5 @@ void loop(){
     // Serial.println(gamepad.lx);
     
     // Serial1.println("xxx");
-    delay(75);
+    // delay(75);
 }

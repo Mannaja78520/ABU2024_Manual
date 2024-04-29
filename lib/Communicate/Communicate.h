@@ -296,7 +296,7 @@ public:
     void readData() {
         unsigned long CurrentTime = millis();
         // LastTime = CurrentTime;
-        static const int expected_data_length = 30;
+        static const int expected_data_length = 40;
         haveDataFromController = Serial1.available();
         if (haveDataFromController >= expected_data_length) {
             LastDataTime = CurrentTime;

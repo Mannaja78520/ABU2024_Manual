@@ -2,7 +2,6 @@
 #define BALL_H
 
 #include <DefinePin.h>
-#include <Controller.h>
 #include <Utilize.h>
 
 Motor Spin(0, 0, motor4PWM, motor4PinA, motor4PinB);
@@ -26,7 +25,7 @@ class Ball{
             BallLeftGrip.attach(Servo6);
             BallRightGrip.attach(Servo7);
             
-            BallUP_DOWN.write(180);
+            BallUP_DOWN.write(0);
             BallLeftGrip.write(0);
             BallRightGrip.write(180);   
         }

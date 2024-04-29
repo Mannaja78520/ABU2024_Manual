@@ -4,10 +4,11 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <Wire.h>
+#include <Controller.h>
 
 #include <Movement.h>
 #include <Harvest.h>
-#include <Ball.h>
+// #include <Ball.h>
 #include <RobotAnalysis.h>
 #include <Communicate.h>
 #include <Utilize.h>
@@ -19,7 +20,7 @@ TransferData t;
 class Robot{
   Movement m;
   Harvest h;
-  Ball b;
+  // Ball b;
   RobotAnalysis ra;
 
   public:
@@ -28,7 +29,7 @@ class Robot{
       ra.init();
       
       h.init();
-      b.init();
+      // b.init();
       
       gamepad.init();
       delay(200);
@@ -39,9 +40,9 @@ class Robot{
       m.MovePower(motor1Speed, motor2Speed, motor3Speed);
     }
     
-    void BallSpin(int SpinSpeed){
-      b.BallSpin(SpinSpeed);
-    }
+    // void BallSpin(int SpinSpeed){
+    //   b.BallSpin(SpinSpeed);
+    // }
 
     void loop(){
       ra.loop();

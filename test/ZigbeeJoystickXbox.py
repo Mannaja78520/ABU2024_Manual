@@ -74,7 +74,7 @@ def joystick_thread():
 joystick_thread = threading.Thread(target=joystick_thread)
 joystick_thread.start()
 
-ser = initialize_serial('/dev/ttyUSB1', 115200)
+ser = initialize_serial('/dev/ttyUSB0', 115200)
 if not ser:
     print("Zigbee port not found. Exiting...")
     exit()

@@ -20,7 +20,7 @@ unsigned long MacroTime = 0;
 
 // Gamepad Variable
 bool Logo_Pressed = false, Y_Pressed = false, K_Pressed = false, 
-     X_Pressed = false, B_Pressed = false, A_Pressed = false;
+     X_Pressed = false, B_Pressed = false, A_Pressed = false, M_Pressed = false;
 
 // Analysis Variable
 unsigned long CurrentTime = millis(), LastTime = millis();
@@ -51,14 +51,7 @@ void EmergencyStart(){
 void EmergencyStop() {
     bool lsd = gamepad.leftStickButton;
     bool rsd = gamepad.rightStickButton;
-
-    if (!lsd || !rsd) {
-        Emergency_Pressed = false;
-        return;
-    }
-    if (Emergency_Pressed) return;
-    Emergency_Pressed = true;
-    if (!EmergencyCutFromController) {
+    if (lsd && rsd && !EmergencyCutFromController) {
         EmergencyCutFromController = true;
         return;
     }
@@ -93,7 +86,7 @@ void MoveIMU(){
     float x2  =  (cos(-yaw) * lx) - (sin(-yaw) * ly);
     float y2  =  (sin(-yaw) * lx) + (cos(-yaw) * ly);
     
-    float R = (r_disable || x2 > 0.05) ? 0 : Controller(0.22, 0.01, 0, 0).Calculate(WrapRads(yaw - setpoint)); 
+    float R = rx; 
     
     if (rx != 0){
         R = rx;
@@ -121,6 +114,7 @@ void MoveIMU(){
 
 void Slide_Transform(){
     bool b = gamepad.B;
+    Serial.println(ISGripSlide);
     
     if (!b) {
         B_Pressed = false;
@@ -165,10 +159,10 @@ void Keep_Harvest(){
     }
     if (K_Pressed) return;
     if (lb && rb){
-        Grip1.write(96);
-        Grip2.write(115);
-        Grip3.write(100);
-        Grip4.write(94);
+        Grip1.write(123);
+        Grip2.write(112);
+        Grip3.write(111);
+        Grip4.write(115);
         IS_13_Keep = IS_24_Keep = true;
         delay(300);
         return;
@@ -187,59 +181,59 @@ void Keep_Harvest(){
     }
 }
 
-void Keep_Ball(){
-    bool a = gamepad.A;
-    unsigned long MTime = CurrentTime - MacroTime;
-    if (MTime > 1000 && GotBall && !ChargeBall){
-        BallUP_DOWN.write(110);
-        if(MTime > 2500){
-            BallUP_DOWN.write(150);
-            if(MTime > 3500){
-                r.BallSpin(BallSpinPower);
-                ISBallSpin = true;
-                ChargeBall = true;
-            }
-        }
-    }
+// void Keep_Ball(){
+//     bool a = gamepad.A;
+//     unsigned long MTime = CurrentTime - MacroTime;
+//     if (MTime > 1000 && GotBall && !ChargeBall){
+//         BallUP_DOWN.write(97);
+//         if(MTime > 2500){
+//             BallUP_DOWN.write(60);
+//             if(MTime > 3500){
+//                 // r.BallSpin(BallSpinPower);
+//                 ISBallSpin = true;
+//                 ChargeBall = true;
+//             }
+//         }
+//     }
     
-    if (!a) {
-        A_Pressed = false;
-        return;
-    }
-    if (A_Pressed) return;
-    A_Pressed = true;
-    if(!GotBall){
-        MacroTime = CurrentTime;
-        BallLeftGrip.write(89);
-        BallRightGrip.write(91);
-        GotBall = true;
-        return;
-    }
-    BallLeftGrip.write(0);
-    BallRightGrip.write(180);
-    BallUP_DOWN.write(180);
-    r.BallSpin(0);
-    GotBall = false;
-}
+//     if (!a) {
+//         A_Pressed = false;
+//         return;
+//     }
+//     if (A_Pressed) return;
+//     A_Pressed = true;
+//     if(!GotBall){
+//         MacroTime = CurrentTime;
+//         BallLeftGrip.write(89);
+//         BallRightGrip.write(91);
+//         GotBall = true;
+//         return;
+//     }
+//     BallLeftGrip.write(0);
+//     BallRightGrip.write(180);
+//     BallUP_DOWN.write(0);
+//     r.BallSpin(0);
+//     GotBall = false;
+// }
 
-void Kick_Ball(){
-    bool x = gamepad.X; 
+// void Kick_Ball(){
+//     bool x = gamepad.X; 
   
-    if (!x) {
-        X_Pressed = false;
-        return;
-    }
-    if (X_Pressed) return;
-    X_Pressed = true;
-    if (ChargeBall){
-        BallUP_DOWN.write(110);
-        delay(300);
-        r.BallSpin(0);
-        BallLeftGrip.write(0);
-        BallRightGrip.write(180);
-        BallUP_DOWN.write(180);
-    }
-}
+//     if (!x) {
+//         X_Pressed = false;
+//         return;
+//     }
+//     if (X_Pressed) return;
+//     X_Pressed = true;
+//     if (ChargeBall){
+//         BallUP_DOWN.write(97);
+//         delay(300);
+//         r.BallSpin(0);
+//         BallLeftGrip.write(0);
+//         BallRightGrip.write(180);
+//         BallUP_DOWN.write(0);
+//     }
+// }
 
 // void SpinBall(){
 //     bool x = gamepad.X; 
@@ -259,12 +253,62 @@ void Kick_Ball(){
 //     ISBallSpin = false;
 //     ChargeBall = false;
 // }
+// Keep_Ball(){
+//     bool a = gamepad.A;
+//     unsigned long MTime = CurrentTime - MacroTime;
+//     if (MTime > 1000 && GotBall && !ChargeBall){
+//         BallUP_DOWN.write(97);
+//         if(MTime > 2500){
+//             BallUP_DOWN.write(60);
+//             if(MTime > 3500){
+//                 // r.BallSpin(BallSpinPower);
+//                 ISBallSpin = true;
+//                 ChargeBall = true;
+//             }
+//         }
+//     }
+    
+//     if (!a) {
+//         A_Pressed = false;
+//         return;
+//     }
+//     if (A_Pressed) return;
+//     A_Pressed = true;
+//     if(!GotBall){
+//         MacroTime = CurrentTime;
+//         BallLeftGrip.write(89);
+//         BallRightGrip.write(91);
+//         GotBall = true;
+//         return;
+//     }
+//     BallLeftGrip.write(0);
+//     BallRightGrip.write(180);
+//     BallUP_DOWN.write(0);
+//     r.BallSpin(0);
+//     GotBall = false;
+// }
 
+// void Kick_
 void imu(){
-    if (gamepad.screen) {
-        IMUyaw = 0; 
+    // if (gamepad.screen) {
+    //     IMUyaw = 0; 
+    //     UseIMU = true;
+    // }else if(gamepad.menu) UseIMU = true;
+
+    if (gamepad.Dpad_down) IMUyaw = 0;
+
+    bool m = gamepad.menu;
+    if (!m) {
+        M_Pressed = false;
+        return;
+    }
+    if (M_Pressed) return;
+    M_Pressed = true;
+    if(!UseIMU){
         UseIMU = true;
-    }else if(gamepad.menu) UseIMU = true;
+        return;
+    }
+    UseIMU = false;
 
 }
 
@@ -282,22 +326,23 @@ void loop(){
     CurrentTime = millis();
     r.loop();
     EmergencyStart();
-    EmergencyStop();
     SendData();
+    // Serial.println(EmergencyCutFromController);
     if (gamepad.haveDataFromController && !EmergencyCutFromController){
+        EmergencyStop();
         imu();
-        Move();
-        // MoveIMU();
+        if(UseIMU) MoveIMU(); 
+        else Move();
         Slide_Transform();
         UpDown_Transform();
         Keep_Harvest();
-        if (!(ISGripSlide || ISGripUP)){
-            Keep_Ball();
-            Kick_Ball();
-        }
+        // if (!(ISGripSlide || ISGripUP)){
+        //     Keep_Ball();
+        //     Kick_Ball();
+        // }
         return;
     }
     r.MovePower(0, 0, 0);
-    r.BallSpin(0);
+    // r.BallSpin(0);
     // // delay(10);
 }
