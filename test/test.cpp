@@ -1,24 +1,24 @@
-// #include <Robot.h>
-#include <Arduino.h>
-#include <SPI.h>
-#include <Wire.h>
-#include <Servo.h>
+#include <Robot.h>
+// #include <Arduino.h>
+// #include <SPI.h>
+// #include <Wire.h>
+// #include <Servo.h>
 
 int grip1Val = 0, grip2Val = 0, grip3Val = 0, grip4Val = 0, 
 UpDownVal = 0, LeftVal = 0, RightVal = 180;
 
-// Robot r;
+Robot r;
 
 Servo BallUp_Down;
 
 void setup(){
-    // r.init();
-    BallUp_Down.attach(7);
-    BallUp_Down.write(UpDownVal);
+    r.init();
+    // BallUp_Down.attach(7);
+    // BallUp_Down.write(UpDownVal);
 }
 
 void loop(){
-    // r.loop();
+    r.loop(30);
     // r.BallSpin(255);
 
     // Grip1 is servo3
@@ -47,12 +47,12 @@ void loop(){
     // Serial.print("Grip3 : ");
     // Serial.println(grip3Val);
 
-    // grip4Val = gamepad.Dpad_right ? grip4Val + 1 : grip4Val;
-    // grip4Val = gamepad.Dpad_left ? grip4Val -1 :grip4Val;
-    // grip4Val = grip4Val < 0 ? 0 : grip4Val > 180 ? 180 : grip4Val;
-    // Grip4.write(grip4Val);
-    // Serial.print("Grip4 : ");
-    // Serial.println(grip4Val);
+    grip4Val = gamepad.Dpad_right ? grip4Val + 1 : grip4Val;
+    grip4Val = gamepad.Dpad_left ? grip4Val -1 :grip4Val;
+    grip4Val = grip4Val < 0 ? 0 : grip4Val > 180 ? 180 : grip4Val;
+    Grip4.write(grip4Val);
+    Serial.print("Grip4 : ");
+    Serial.println(grip4Val);
 
     // UpDownVal = gamepad.Dpad_right ? UpDownVal + 1 : UpDownVal;
     // UpDownVal = gamepad.Dpad_left ? UpDownVal -1 :UpDownVal;
@@ -78,5 +78,5 @@ void loop(){
     // Serial.println(gamepad.lx);
     
     // Serial1.println("xxx");
-    // delay(75);
+    delay(75);
 }

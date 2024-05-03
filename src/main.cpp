@@ -5,10 +5,12 @@ Robot r;
 
 // Movement Variable
 //Speed is length 0-1 assum as 1-100%
-float NormalSpeed = 0.9, trunSpeed = 0.4;
+float NormalSpeed = 1, trunSpeed = 0.45;
 float maxSpeed = 255.0;
 float setpoint = 0;
 bool  r_disable = false, UseIMU = true;
+
+float motor1Speed, motor2Speed, motor3Speed;
 
 // Harvest Variable
 bool ISGripUP = false, ISGripSlide = false, IS_13_Keep = false, IS_24_Keep = false;
@@ -63,58 +65,56 @@ void Move(){
     float ly = -gamepad.ly * NormalSpeed;
     float rx =  gamepad.rx * trunSpeed;
 
+    lx = gamepad.Dpad_left  ? -0.75 : 
+         gamepad.Dpad_right ?  0.75 : lx;
+    ly = gamepad.Dpad_down  ? -0.75 :
+         gamepad.Dpad_up    ?  0.75 : ly;
+
     float D = max(abs(lx)+abs(ly)+abs(rx), 1.0);
 
     float angle1 = 0.0;
     float angle2 = 2.0 * PI / 3.0;
     float angle3 = -2.0 * PI / 3.0;
 
-    float motor1Speed = (lx * cos(angle1) + ly * sin(angle1) + rx) / D * maxSpeed;
-    float motor2Speed = (lx * cos(angle2) + ly * sin(angle2) + rx) / D * maxSpeed;
-    float motor3Speed = (lx * cos(angle3) + ly * sin(angle3) + rx) / D * maxSpeed;
-
-    r.MovePower(static_cast<int>(motor1Speed),
-                static_cast<int>(motor2Speed),
-                static_cast<int>(motor3Speed));
+    motor1Speed = (lx * cos(angle1) + ly * sin(angle1) + rx) / D * maxSpeed;
+    motor2Speed = (lx * cos(angle2) + ly * sin(angle2) + rx) / D * maxSpeed;
+    motor3Speed = (lx * cos(angle3) + ly * sin(angle3) + rx) / D * maxSpeed;
+    Serial.println(motor1Speed);
+    Serial.println(motor2Speed);
+    Serial.println(motor3Speed);
 }
 
 void MoveIMU(){
     float lx  =  gamepad.lx * maxSpeed;
     float ly  = -gamepad.ly * maxSpeed;
     float rx  =  gamepad.rx * trunSpeed;
+
+    lx = gamepad.Dpad_left  ? -0.75 : 
+         gamepad.Dpad_right ?  0.75 : lx;
+    ly = gamepad.Dpad_down  ? -0.75 :
+         gamepad.Dpad_up    ?  0.75 : ly;
+
     float yaw =  ToRadians(IMUyaw);
     float x2  =  (cos(-yaw) * lx) - (sin(-yaw) * ly);
     float y2  =  (sin(-yaw) * lx) + (cos(-yaw) * ly);
-    
-    float R = rx; 
-    
-    if (rx != 0){
-        R = rx;
-        setpoint = yaw;
-    }
 
-    float D = max(abs(x2)+abs(y2)+abs(R), 1.0);
+    float D = max(abs(x2)+abs(y2)+abs(rx), 1.0);
 
     float angle1 = 0.0;
     float angle2 = 2.0 * PI / 3.0;
     float angle3 = -2.0 * PI / 3.0;
-    float motor1Speed = x2 * cos(angle1) + y2 * sin(angle1);
-    float motor2Speed = x2 * cos(angle2) + y2 * sin(angle2);
-    float motor3Speed = x2 * cos(angle3) + y2 * sin(angle3);
+    motor1Speed = x2 * cos(angle1) + y2 * sin(angle1);
+    motor2Speed = x2 * cos(angle2) + y2 * sin(angle2);
+    motor3Speed = x2 * cos(angle3) + y2 * sin(angle3);
 
-    motor1Speed = (motor1Speed + R) / D * maxSpeed;
-    motor2Speed = (motor2Speed + R) / D * maxSpeed;
-    motor3Speed = (motor3Speed + R) / D * maxSpeed;
-
-    r.MovePower(static_cast<int>(motor1Speed),
-                static_cast<int>(motor2Speed),
-                static_cast<int>(motor3Speed));
+    motor1Speed = (motor1Speed + rx) / D * maxSpeed;
+    motor2Speed = (motor2Speed + rx) / D * maxSpeed;
+    motor3Speed = (motor3Speed + rx) / D * maxSpeed;
 
 }
 
 void Slide_Transform(){
     bool b = gamepad.B;
-    Serial.println(ISGripSlide);
     
     if (!b) {
         B_Pressed = false;
@@ -159,10 +159,10 @@ void Keep_Harvest(){
     }
     if (K_Pressed) return;
     if (lb && rb){
-        Grip1.write(123);
+        Grip1.write(124);
         Grip2.write(112);
         Grip3.write(111);
-        Grip4.write(115);
+        Grip4.write(99);
         IS_13_Keep = IS_24_Keep = true;
         delay(300);
         return;
@@ -181,40 +181,40 @@ void Keep_Harvest(){
     }
 }
 
-// void Keep_Ball(){
-//     bool a = gamepad.A;
-//     unsigned long MTime = CurrentTime - MacroTime;
-//     if (MTime > 1000 && GotBall && !ChargeBall){
-//         BallUP_DOWN.write(97);
-//         if(MTime > 2500){
-//             BallUP_DOWN.write(60);
-//             if(MTime > 3500){
-//                 // r.BallSpin(BallSpinPower);
-//                 ISBallSpin = true;
-//                 ChargeBall = true;
-//             }
-//         }
-//     }
+void Keep_Ball(){
+    bool a = gamepad.A;
+    unsigned long MTime = CurrentTime - MacroTime;
+    if (MTime > 1000 && GotBall && !ChargeBall){
+        BallUP_DOWN.write(97);
+        if(MTime > 2500){
+            BallUP_DOWN.write(60);
+            if(MTime > 3500){
+                // r.BallSpin(BallSpinPower);
+                ISBallSpin = true;
+                ChargeBall = true;
+            }
+        }
+    }
     
-//     if (!a) {
-//         A_Pressed = false;
-//         return;
-//     }
-//     if (A_Pressed) return;
-//     A_Pressed = true;
-//     if(!GotBall){
-//         MacroTime = CurrentTime;
-//         BallLeftGrip.write(89);
-//         BallRightGrip.write(91);
-//         GotBall = true;
-//         return;
-//     }
-//     BallLeftGrip.write(0);
-//     BallRightGrip.write(180);
-//     BallUP_DOWN.write(0);
-//     r.BallSpin(0);
-//     GotBall = false;
-// }
+    if (!a) {
+        A_Pressed = false;
+        return;
+    }
+    if (A_Pressed) return;
+    A_Pressed = true;
+    if(!GotBall){
+        MacroTime = CurrentTime;
+        BallLeftGrip.write(89);
+        BallRightGrip.write(91);
+        GotBall = true;
+        return;
+    }
+    BallLeftGrip.write(0);
+    BallRightGrip.write(180);
+    BallUP_DOWN.write(0);
+    r.BallSpin(0);
+    GotBall = false;
+}
 
 // void Kick_Ball(){
 //     bool x = gamepad.X; 
@@ -290,12 +290,7 @@ void Keep_Harvest(){
 
 // void Kick_
 void imu(){
-    // if (gamepad.screen) {
-    //     IMUyaw = 0; 
-    //     UseIMU = true;
-    // }else if(gamepad.menu) UseIMU = true;
-
-    if (gamepad.Dpad_down) IMUyaw = 0;
+    if (gamepad.screen) IMUyaw = 0;
 
     bool m = gamepad.menu;
     if (!m) {
@@ -313,8 +308,10 @@ void imu(){
 }
 
 void SendData(){
-    int data[] = {UseIMU, ISGripUP, ISGripSlide, IS_13_Keep, IS_24_Keep, ISBallSpin, GotBall, ChargeBall, EmergencyCutFromController};
-    // t.WriteData((String)(data));
+    int data = !ISBallSpin         ? 0 :
+               BallSpinPower > 200 ? 1 :
+               BallSpinPower > 150 ? 2 : 3;
+    if(ISBallSpin) t.WriteData((String)(data));
 }
 
 void setup(){
@@ -324,7 +321,7 @@ void setup(){
 
 void loop(){
     CurrentTime = millis();
-    r.loop();
+    r.loop(80);
     EmergencyStart();
     SendData();
     // Serial.println(EmergencyCutFromController);
@@ -336,13 +333,16 @@ void loop(){
         Slide_Transform();
         UpDown_Transform();
         Keep_Harvest();
-        // if (!(ISGripSlide || ISGripUP)){
-        //     Keep_Ball();
+        if (!(ISGripSlide || ISGripUP)){
+            Keep_Ball();
         //     Kick_Ball();
-        // }
+        }
+        r.MovePower(static_cast<int>(motor1Speed),
+                    static_cast<int>(motor2Speed),
+                    static_cast<int>(motor3Speed));
         return;
     }
     r.MovePower(0, 0, 0);
     // r.BallSpin(0);
-    // // delay(10);
+    // delay(10);
 }

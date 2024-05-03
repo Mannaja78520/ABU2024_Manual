@@ -63,6 +63,13 @@ def send_data_to_arduino(ser, data):
     ser.write(data_str.encode())
     print("Sent data to Arduino:", data_with_checksum)
 
+def receive_data_from_arduino(ser):
+    received_data = ser.readline().strip().decode()
+    print("Received data from Arduino:", received_data)
+
+    return received_data
+        
+
 def joystick_thread():
     global joystick
     global joystick_initialized
@@ -70,11 +77,11 @@ def joystick_thread():
     if not joystick:
         joystick = initialize_joystick()
         joystick_initialized = True
-        
+
 joystick_thread = threading.Thread(target=joystick_thread)
 joystick_thread.start()
 
-ser = initialize_serial('/dev/ttyUSB0', 115200)
+ser = initialize_serial('/dev/ttyUSB1', 57600)
 if not ser:
     print("Zigbee port not found. Exiting...")
     exit()
@@ -83,11 +90,10 @@ while not joystick_initialized:
     time.sleep(1)
 
 while True:
-    analog_data, digital_data, dpad_data = read_joystick(joystick)
-    data_to_send = analog_data + digital_data + dpad_data
+    if receive_data_from_arduino(ser):
+        analog_data, digital_data, dpad_data = read_joystick(joystick)
+        data_to_send = analog_data + digital_data + dpad_data
 
-    send_data_to_arduino(ser, data_to_send)
-    last_data = data_to_send
-    last_analog_data = analog_data
-
-    time.sleep(0.03)
+        send_data_to_arduino(ser, data_to_send)
+        last_data = data_to_send
+        last_analog_data = analog_data

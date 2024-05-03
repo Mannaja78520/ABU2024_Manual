@@ -6,14 +6,20 @@
 
 TransferData t;
 
-const uint16_t PixelCount = 16;
+int haveData; 
+
+// หลัง 0-15 +4
+// ซ้าย 16-16+22
+// ขวา 16+22+21
+
+const uint16_t PixelCount = 63;
 const uint8_t PixelPin = 4;
 
 const uint16_t AnimCount = PixelCount / 5 * 2 + 1; // we only need enough animations for the tail and one extra
 
 const uint16_t PixelFadeDuration = 100; 
 
-const uint16_t NextPixelMoveDuration = 300 / PixelCount; // how fast we move through the pixels
+const uint16_t NextPixelMoveDuration = 100 / PixelCount; // how fast we move through the pixels
 
 NeoGamma<NeoGammaTableMethod> colorGamma; // for any fade animations, best to correct gamma
 
@@ -108,15 +114,21 @@ void LoopAnimUpdate(const AnimationParam& param)
 }
 
 void RGB(String color){
+    #define pixelshow_count 10
     for (uint16_t pixel = 0; pixel < PixelCount; pixel++) {
-        strip.SetPixelColor(pixel, red);
+        strip.SetPixelColor(pixel - pixelshow_count, black);
+        if (pixel < pixelshow_count) strip.SetPixelColor(PixelCount - (pixel+1), black);
+        if(color == "1") strip.SetPixelColor(pixel, red);
+        if(color == "2") strip.SetPixelColor(pixel, blue);
+        if(color == "3") strip.SetPixelColor(pixel, green);
+        strip.Show();
+        delay(30);
     }
-    strip.Show();
 }
 
 void setup(){
     Serial.begin(115200);
-    t.init(2, 115200);
+    t.init();
     while (!Serial);
     Serial.flush();
     strip.Begin();
@@ -131,10 +143,10 @@ void setup(){
 void loop(){
     String rgb = t.Data;
     t.readData();
-    if (rgb == "Idle"){
-
-    }
-
-    animations.UpdateAnimations();
-    strip.Show();
+    // if (rgb != "0" && haveData){
+    //     RGB(rgb);
+    // }
+    // else animations.UpdateAnimations();
+    RGB("1");
+    // strip.Show();
 }

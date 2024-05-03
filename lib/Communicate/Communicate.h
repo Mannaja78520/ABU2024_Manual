@@ -194,7 +194,7 @@ public:
 class DataFromZigbeeJoystickXbox {
 private:
 
-    unsigned long LastTime = 0, LastDataTime = 0, DataSameAsLastTime = 0;
+    unsigned long LastTime = 0, LastDelayTime = 0, LastDataTime = 0, DataSameAsLastTime = 0;
     
     float Last_lx, Last_ly, Last_rx, Last_ry, Last_rt, Last_lt;
     bool Last_A, Last_B, Last_X, Last_Y, Last_lb, Last_rb, Last_s, Last_m, Last_f, Last_lsb, Last_rsb, Last_u;
@@ -205,9 +205,10 @@ private:
         A = B = X = Y = leftBumper = rightBumper = screen = menu = logo = leftStickButton = rightStickButton = false;
         Dpad_right = Dpad_left = Dpad_up = Dpad_down = false;
         right_left_Dpad = up_down_Dpad = 0;
-        Last_lx = Last_ly = Last_rx = Last_ry =  Last_rt =  Last_lt = 0.0;
-        Last_A = Last_B = Last_X = Last_Y = Last_lb = Last_rb = Last_s = Last_m = Last_f = Last_lsb = Last_rsb = false;
-        Last_dr = Last_dl = Last_du = Last_dd = false;
+    }
+
+    void resetLastVariable(){
+
     }
 
     void UpdateLastData() {
@@ -290,15 +291,19 @@ public:
     }
 
     void init() {
-        Serial1.begin(115200);
+        Serial1.begin(57600);
     }
 
-    void readData() {
+    void readData(int DelayData) {
         unsigned long CurrentTime = millis();
-        // LastTime = CurrentTime;
+        if(CurrentTime - LastDelayTime > DelayData){
+            Serial1.println(1);
+            LastDelayTime = CurrentTime;
+        }
         static const int expected_data_length = 40;
         haveDataFromController = Serial1.available();
         if (haveDataFromController >= expected_data_length) {
+            resetVariables();
             LastDataTime = CurrentTime;
             String receivedData = Serial1.readStringUntil('\n');
             // Serial.println("Received data: " + receivedData);
@@ -315,7 +320,8 @@ public:
                         case 0:  checksum = data; sumOfData = 0; break;
                         case 1:  lx = data / 100.0; break;
                         case 2:  ly = data / 100.0; break;
-                        case 3:  leftTrigger = data / 100.0; break;
+                        case 3:  leftTrigger
+                         = data / 100.0; break;
                         case 4:  rx = data / 100.0; break;
                         case 5:  ry = data / 100.0; break;
                         case 6:  rightTrigger = data / 100.0; break;
@@ -376,14 +382,11 @@ public:
 };
 
 class TransferData {
-private:
-    HardwareSerial* serialPorts[4];
-    int selectedSerialNum;
 public:
     String Data;
 
     void init() {
-        Serial2.begin(115200);
+        Serial2.begin(9600);
     }
 
     void WriteData(String data) {
@@ -391,6 +394,7 @@ public:
     }
     
     void readData() {
+        
         if (Serial2.available()) {
             Data = Serial2.readStringUntil('\n');
             while (Serial2.available() > 0) {
