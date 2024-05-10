@@ -25,9 +25,9 @@ class Ball{
             BallLeftGrip.attach(Servo6);
             BallRightGrip.attach(Servo7);
             
-            BallUP_DOWN.write(0);
-            BallLeftGrip.write(0);
-            BallRightGrip.write(180);   
+            BallUP_DOWN.write(180);
+            BallLeftGrip.write(95);
+            BallRightGrip.write(91);   
         }
         void BallSpin(int SpinSpeed){
             Spin.spin(SpinSpeed);

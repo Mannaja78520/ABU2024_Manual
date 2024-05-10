@@ -2,6 +2,7 @@
 #define COMMUNICATE_H
 
 #include <Arduino.h>
+#include <HardwareSerial.h>
 
 class DataFromZigbeeJoystickPlayStation {
 private:
@@ -193,9 +194,12 @@ public:
 
 class DataFromZigbeeJoystickXbox {
 private:
-
+    int BaudRate;
+    unsigned long i = 0;
     unsigned long LastTime = 0, LastDelayTime = 0, LastDataTime = 0, DataSameAsLastTime = 0;
-    
+
+    bool flowControlEnabled = true, lastHaveControl = false;
+
     float Last_lx, Last_ly, Last_rx, Last_ry, Last_rt, Last_lt;
     bool Last_A, Last_B, Last_X, Last_Y, Last_lb, Last_rb, Last_s, Last_m, Last_f, Last_lsb, Last_rsb, Last_u;
     bool Last_dr, Last_dl, Last_du, Last_dd;
@@ -208,7 +212,11 @@ private:
     }
 
     void resetLastVariable(){
-
+        Last_lx = Last_ly = Last_rx = Last_ry = Last_rt = Last_lt = 0.0;
+        Last_A = Last_B = Last_X = Last_Y = Last_lb = Last_rb = Last_s = Last_m = Last_f = Last_lsb = Last_rsb = Last_u = false;
+        Last_dr = Last_dl = Last_du = Last_dd = false;
+        i = 0;
+        LastTime = LastDelayTime = LastDataTime = DataSameAsLastTime = 0;
     }
 
     void UpdateLastData() {
@@ -263,19 +271,32 @@ private:
     Dpad_left = Last_dl; 
     Dpad_up = Last_du; 
     Dpad_down = Last_dd;
-}
-
-void compareData(unsigned long CurrentTime) {
-    if (lx == Last_lx && ly == Last_ly && rx == Last_rx && ry == Last_ry && 
-        rightTrigger == Last_rt && leftTrigger == Last_lt) {
-        if (CurrentTime - DataSameAsLastTime > 1250){
-            resetVariables();
-            haveDataFromController = 0; 
-            return;
-        }
     }
-    DataSameAsLastTime = CurrentTime;
-}
+
+    void compareData(unsigned long CurrentTime) {
+        if (lx == Last_lx && ly == Last_ly && rx == Last_rx && ry == Last_ry && 
+            rightTrigger == Last_rt && leftTrigger == Last_lt) {
+            if (CurrentTime - DataSameAsLastTime > 1250){
+                resetVariables();
+                haveDataFromController = 0; 
+                return;
+            }
+        }
+        DataSameAsLastTime = CurrentTime;
+    }
+
+    void resetCommunication() {
+        // Stop ongoing transmission or reception
+        Serial1.end();
+
+        // Reset internal variables
+        resetVariables();
+        // Reset last data
+        resetLastVariable();
+
+        // Reinitialize communication
+        Serial1.begin(115200);
+    }
 
 public:
     int checksum;
@@ -283,7 +304,7 @@ public:
     bool A, B, X, Y, leftBumper, rightBumper, screen, menu, logo, leftStickButton, rightStickButton, upload;
     bool Dpad_right, Dpad_left, Dpad_up, Dpad_down;
     int right_left_Dpad, up_down_Dpad;
-    int haveDataFromController;
+    unsigned int haveDataFromController;
 
     DataFromZigbeeJoystickXbox() {
         haveDataFromController = 0;
@@ -291,90 +312,102 @@ public:
     }
 
     void init() {
-        Serial1.begin(57600);
+        Serial1.begin(115200);
     }
 
-    void readData(int DelayData) {
+    void readData(unsigned int DelayData) {
         unsigned long CurrentTime = millis();
-        if(CurrentTime - LastDelayTime > DelayData){
-            Serial1.println(1);
-            LastDelayTime = CurrentTime;
-        }
-        static const int expected_data_length = 40;
-        haveDataFromController = Serial1.available();
-        if (haveDataFromController >= expected_data_length) {
-            resetVariables();
-            LastDataTime = CurrentTime;
-            String receivedData = Serial1.readStringUntil('\n');
-            // Serial.println("Received data: " + receivedData);
-            // Serial.println(receivedData.length());
-            if (receivedData.length() >= expected_data_length) {
-                char* token;
-                char* ptr = const_cast<char*>(receivedData.c_str());
-                int index = 0;
-                int sumOfData = 0;
-                while ((token = strtok_r(ptr, ",", &ptr)) != NULL && index < 21) {
-                    int data = atoi(token);
-                    sumOfData += abs(data);
-                    switch (index) {
-                        case 0:  checksum = data; sumOfData = 0; break;
-                        case 1:  lx = data / 100.0; break;
-                        case 2:  ly = data / 100.0; break;
-                        case 3:  leftTrigger
-                         = data / 100.0; break;
-                        case 4:  rx = data / 100.0; break;
-                        case 5:  ry = data / 100.0; break;
-                        case 6:  rightTrigger = data / 100.0; break;
-                        case 7:  A = data; break;
-                        case 8:  B = data; break;
-                        case 9:  X = data; break;
-                        case 10: Y = data; break;
-                        case 11: leftBumper = data; break;
-                        case 12: rightBumper = data; break;
-                        case 13: screen = data; break;
-                        case 14: menu = data; break; 
-                        case 15: logo = data; break;
-                        case 16: leftStickButton = data; break;
-                        case 17: rightStickButton = data; break;
-                        case 18: upload = data; break;
-                        case 19: right_left_Dpad = data; break;
-                        case 20: up_down_Dpad = data; break;
+        // if (CurrentTime - LastDelayTime > DelayData) {
+        //     // Serial1.println(1);
+        //     LastDelayTime = CurrentTime;
+        // }
+        // else{
+            static const int expected_data_length = 40;
+            haveDataFromController = Serial1.available();
+            if (haveDataFromController) {
+                resetVariables();
+                LastDataTime = CurrentTime;
+                String receivedData = Serial1.readStringUntil('\n');
+                // Serial.println("Received data: " + receivedData);
+                // Serial.println(receivedData.length());
+                if (receivedData.length() >= expected_data_length && receivedData.length() <= 80) {
+                    LastTime = CurrentTime;
+                    char* token;
+                    char* ptr = const_cast<char*>(receivedData.c_str());
+                    int index = 0;
+                    int sumOfData = 0;
+                    while ((token = strtok_r(ptr, ",", &ptr)) != NULL && index < 21) {
+                        int data = atoi(token);
+                        sumOfData += abs(data);
+                        switch (index) {
+                            case 0:  checksum = data; sumOfData = 0; break;
+                            case 1:  lx = data / 100.0; break;
+                            case 2:  ly = data / 100.0; break;
+                            case 3:  leftTrigger = data / 100.0; break;
+                            case 4:  rx = data / 100.0; break;
+                            case 5:  ry = data / 100.0; break;
+                            case 6:  rightTrigger = data / 100.0; break;
+                            case 7:  A = data; break;
+                            case 8:  B = data; break;
+                            case 9:  X = data; break;
+                            case 10: Y = data; break;
+                            case 11: leftBumper = data; break;
+                            case 12: rightBumper = data; break;
+                            case 13: screen = data; break;
+                            case 14: menu = data; break; 
+                            case 15: logo = data; break;
+                            case 16: leftStickButton = data; break;
+                            case 17: rightStickButton = data; break;
+                            case 18: upload = data; break;
+                            case 19: right_left_Dpad = data; break;
+                            case 20: up_down_Dpad = data; break;
+                        }
+                        index++;
                     }
-                    index++;
-                }
-                // Discard any remaining data in the buffer
-                while (Serial1.available() > 0) {
-                    Serial1.read();
-                }
-                int receivedChecksum = abs(sumOfData - checksum);
-                if (receivedChecksum == 0) {
-                    // Debugging: Print received data
-                    // Serial.println("Data Match");
-                    Dpad_right = right_left_Dpad ==  1;
-                    Dpad_left  = right_left_Dpad == -1;
-                    Dpad_up    = up_down_Dpad    ==  1;
-                    Dpad_down  = up_down_Dpad    == -1;
-                    // compareData(CurrentTime);
-                    UpdateLastData();
+                    // Discard any remaining data in the buffer
+                    while (Serial1.available() > 0 && CurrentTime - LastTime < 50) {
+                        CurrentTime = millis();
+                        Serial1.read();
+                    }
+                    int receivedChecksum = abs(sumOfData - checksum);
+                    if (receivedChecksum == 0) {
+                        // Debugging: Print received data
+                        // Serial.println("Data Match");
+                        Dpad_right = right_left_Dpad ==  1;
+                        Dpad_left  = right_left_Dpad == -1;
+                        Dpad_up    = up_down_Dpad    ==  1;
+                        Dpad_down  = up_down_Dpad    == -1;
+                        // compareData(CurrentTime);
+                        UpdateLastData();
+                        return;
+                    }
+                    Serial.println("Checksum mismatch!");
+                    while (Serial1.available() > 0 && CurrentTime - LastTime < 50) {
+                        CurrentTime = millis();
+                        Serial1.read();
+                    }
+                    // Serial1.readStringUntil('\n');
+                    UseLastData();
                     return;
-                }
-                Serial.println("Checksum mismatch!");
-                Serial1.readStringUntil('\n'); // Discard the incomplete data
+                } 
+                Serial.println("Incomplete data received!");
+                while (Serial1.available() > 0 && CurrentTime - LastTime < 50) {
+                        CurrentTime = millis();
+                        Serial1.read();
+                    }
+                // Serial1.readStringUntil('\n');
                 UseLastData();
                 return;
-            } 
-            Serial.println("Incomplete data received!");
-            Serial1.readStringUntil('\n'); // Discard the incomplete data
-            UseLastData();
-            return;
-        }
-        // Serial.println("No data received!");
-        if(CurrentTime - LastDataTime < 200){
+            }
+        // }
+    // Serial.println("No data received!");
+        if(CurrentTime - LastDataTime < 300){
             haveDataFromController = 1;
             UseLastData();
             return;
         }
         haveDataFromController = 0;
+        // lastHaveControl = true;
         resetVariables();
         //// Serial.println(CurrentTime - LastDataTime);
         // UseLastData();

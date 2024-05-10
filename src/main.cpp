@@ -17,11 +17,11 @@ bool ISGripUP = false, ISGripSlide = false, IS_13_Keep = false, IS_24_Keep = fal
 
 // Ball Varialbe
 int BallSpinPower = 255;
-bool ISBallSpin = false, GotBall = false, ChargeBall = false;
+bool ISBallSpin = false, GotBall = false, ChargeBall = false, ArmUp = true;
 unsigned long MacroTime = 0;
 
 // Gamepad Variable
-bool Logo_Pressed = false, Y_Pressed = false, K_Pressed = false, 
+bool Logo_Pressed = false, Y_Pressed = false, K_Pressed = false,
      X_Pressed = false, B_Pressed = false, A_Pressed = false, M_Pressed = false;
 
 // Analysis Variable
@@ -79,14 +79,14 @@ void Move(){
     motor1Speed = (lx * cos(angle1) + ly * sin(angle1) + rx) / D * maxSpeed;
     motor2Speed = (lx * cos(angle2) + ly * sin(angle2) + rx) / D * maxSpeed;
     motor3Speed = (lx * cos(angle3) + ly * sin(angle3) + rx) / D * maxSpeed;
-    Serial.println(motor1Speed);
-    Serial.println(motor2Speed);
-    Serial.println(motor3Speed);
+    // Serial.println(motor1Speed);
+    // Serial.println(motor2Speed);
+    // Serial.println(motor3Speed);
 }
 
 void MoveIMU(){
-    float lx  =  gamepad.lx * maxSpeed;
-    float ly  = -gamepad.ly * maxSpeed;
+    float lx  =  gamepad.lx * NormalSpeed;
+    float ly  = -gamepad.ly * NormalSpeed;
     float rx  =  gamepad.rx * trunSpeed;
 
     lx = gamepad.Dpad_left  ? -0.75 : 
@@ -103,13 +103,13 @@ void MoveIMU(){
     float angle1 = 0.0;
     float angle2 = 2.0 * PI / 3.0;
     float angle3 = -2.0 * PI / 3.0;
-    motor1Speed = x2 * cos(angle1) + y2 * sin(angle1);
-    motor2Speed = x2 * cos(angle2) + y2 * sin(angle2);
-    motor3Speed = x2 * cos(angle3) + y2 * sin(angle3);
+    motor1Speed = x2 * cos(angle1) + y2 * sin(angle1) + rx;
+    motor2Speed = x2 * cos(angle2) + y2 * sin(angle2) + rx;
+    motor3Speed = x2 * cos(angle3) + y2 * sin(angle3) + rx;
 
-    motor1Speed = (motor1Speed + rx) / D * maxSpeed;
-    motor2Speed = (motor2Speed + rx) / D * maxSpeed;
-    motor3Speed = (motor3Speed + rx) / D * maxSpeed;
+    motor1Speed = (motor1Speed / D) * maxSpeed;
+    motor2Speed = (motor2Speed / D) * maxSpeed;
+    motor3Speed = (motor3Speed / D) * maxSpeed;
 
 }
 
@@ -152,8 +152,9 @@ void UpDown_Transform(){
 void Keep_Harvest(){
     bool lb = gamepad.leftBumper;
     bool rb = gamepad.rightBumper;
-
-    if (!(lb || rb)){
+    bool lt = gamepad.leftTrigger  > 0.3;
+    bool rt = gamepad.rightTrigger > 0.3;
+    if (!(lb || rb || rt || lt)){
         K_Pressed = false;
         return;
     }
@@ -162,22 +163,36 @@ void Keep_Harvest(){
         Grip1.write(124);
         Grip2.write(112);
         Grip3.write(111);
-        Grip4.write(99);
+        Grip4.write(90);
         IS_13_Keep = IS_24_Keep = true;
         delay(300);
         return;
     }
-    if (IS_13_Keep && rb){
-        Grip1.write(0);
-        Grip3.write(0);
-        IS_13_Keep = false;
-        return;
+    if (IS_13_Keep) {
+        if (lb || lt) {
+            if (lt) {
+                Grip1.write(90);
+                Grip3.write(86);
+                delay(500);
+            }
+            Grip1.write(0);
+            Grip3.write(0);
+            IS_13_Keep = false;
+            return;
+        }
     }
-    if (IS_24_Keep && lb){
-        Grip2.write(0);
-        Grip4.write(0);
-        IS_24_Keep = false;
-        return;
+    if (IS_24_Keep) {
+        if (rb || rt) {
+            if (rt){
+                Grip2.write(90);
+                Grip4.write(80);
+                delay(500);
+            }
+            Grip2.write(0);
+            Grip4.write(0);
+            IS_24_Keep = false;
+            return;
+        }
     }
 }
 
@@ -185,11 +200,12 @@ void Keep_Ball(){
     bool a = gamepad.A;
     unsigned long MTime = CurrentTime - MacroTime;
     if (MTime > 1000 && GotBall && !ChargeBall){
-        BallUP_DOWN.write(97);
+        BallUP_DOWN.write(155);
+        ArmUp = true;
         if(MTime > 2500){
-            BallUP_DOWN.write(60);
-            if(MTime > 3500){
-                // r.BallSpin(BallSpinPower);
+            BallUP_DOWN.write(125);
+            if(MTime > 3000){
+                r.BallSpin(BallSpinPower);
                 ISBallSpin = true;
                 ChargeBall = true;
             }
@@ -202,93 +218,64 @@ void Keep_Ball(){
     }
     if (A_Pressed) return;
     A_Pressed = true;
-    if(!GotBall){
+    if(!GotBall && !ArmUp){
         MacroTime = CurrentTime;
-        BallLeftGrip.write(89);
+        BallLeftGrip.write(95);
         BallRightGrip.write(91);
         GotBall = true;
         return;
     }
+    r.BallSpin(0);
+    BallUP_DOWN.write(75);
+    delay(400);
     BallLeftGrip.write(0);
     BallRightGrip.write(180);
-    BallUP_DOWN.write(0);
-    r.BallSpin(0);
+    ArmUp = false;
     GotBall = false;
+    ChargeBall = false;
 }
 
-// void Kick_Ball(){
-//     bool x = gamepad.X; 
+void AdjustArm(){
+    bool x = gamepad.X; 
   
-//     if (!x) {
-//         X_Pressed = false;
-//         return;
-//     }
-//     if (X_Pressed) return;
-//     X_Pressed = true;
-//     if (ChargeBall){
-//         BallUP_DOWN.write(97);
-//         delay(300);
-//         r.BallSpin(0);
-//         BallLeftGrip.write(0);
-//         BallRightGrip.write(180);
-//         BallUP_DOWN.write(0);
-//     }
-// }
+    if (!x) {
+        X_Pressed = false;
+        return;
+    }
+    if (X_Pressed) return;
+    X_Pressed = true;
+    if (!ArmUp && !ChargeBall){
+        BallUP_DOWN.write(180);
+        ArmUp = true;
+        return;
+    }
+    if(ArmUp && !ChargeBall){
+        BallUP_DOWN.write(75);
+        BallLeftGrip.write(0);
+        BallRightGrip.write(180);
+        ArmUp = false;
+        return;
+    }
+}
 
-// void SpinBall(){
-//     bool x = gamepad.X; 
-  
-//     if (!x) {
-//         X_Pressed = false;
-//         return;
-//     }
-//     if (X_Pressed) return;
-//     X_Pressed = true;
-//     if (!ISBallSpin){
-//         ISBallSpin = true;
-//         r.BallSpin(BallSpinPower);
-//         return;
-//     }
-//     r.BallSpin(0);
-//     ISBallSpin = false;
-//     ChargeBall = false;
-// }
-// Keep_Ball(){
-//     bool a = gamepad.A;
-//     unsigned long MTime = CurrentTime - MacroTime;
-//     if (MTime > 1000 && GotBall && !ChargeBall){
-//         BallUP_DOWN.write(97);
-//         if(MTime > 2500){
-//             BallUP_DOWN.write(60);
-//             if(MTime > 3500){
-//                 // r.BallSpin(BallSpinPower);
-//                 ISBallSpin = true;
-//                 ChargeBall = true;
-//             }
-//         }
-//     }
-    
-//     if (!a) {
-//         A_Pressed = false;
-//         return;
-//     }
-//     if (A_Pressed) return;
-//     A_Pressed = true;
-//     if(!GotBall){
-//         MacroTime = CurrentTime;
-//         BallLeftGrip.write(89);
-//         BallRightGrip.write(91);
-//         GotBall = true;
-//         return;
-//     }
-//     BallLeftGrip.write(0);
-//     BallRightGrip.write(180);
-//     BallUP_DOWN.write(0);
-//     r.BallSpin(0);
-//     GotBall = false;
-// }
+void Kick_Ball(){
+    bool x = gamepad.X; 
 
-// void Kick_
+    if (ChargeBall && ArmUp && x){
+        BallUP_DOWN.write(180);
+        delay(500);
+        r.BallSpin(0);
+        BallUP_DOWN.write(75);
+        delay(500);
+        BallLeftGrip.write(0);
+        BallRightGrip.write(180);
+        ArmUp = false;
+        ChargeBall = false;
+        GotBall    = false;
+        return;
+    }
+}
+
 void imu(){
     if (gamepad.screen) IMUyaw = 0;
 
@@ -307,7 +294,7 @@ void imu(){
 
 }
 
-void SendData(){
+void SendDataToESP(){
     int data = !ISBallSpin         ? 0 :
                BallSpinPower > 200 ? 1 :
                BallSpinPower > 150 ? 2 : 3;
@@ -320,10 +307,11 @@ void setup(){
 }
 
 void loop(){
+    delay(25);
     CurrentTime = millis();
-    r.loop(80);
+    r.loop(100);
     EmergencyStart();
-    SendData();
+    SendDataToESP();
     // Serial.println(EmergencyCutFromController);
     if (gamepad.haveDataFromController && !EmergencyCutFromController){
         EmergencyStop();
@@ -333,9 +321,10 @@ void loop(){
         Slide_Transform();
         UpDown_Transform();
         Keep_Harvest();
+        AdjustArm(); 
         if (!(ISGripSlide || ISGripUP)){
             Keep_Ball();
-        //     Kick_Ball();
+            Kick_Ball();
         }
         r.MovePower(static_cast<int>(motor1Speed),
                     static_cast<int>(motor2Speed),
@@ -343,6 +332,5 @@ void loop(){
         return;
     }
     r.MovePower(0, 0, 0);
-    // r.BallSpin(0);
-    // delay(10);
+    r.BallSpin(0);
 }

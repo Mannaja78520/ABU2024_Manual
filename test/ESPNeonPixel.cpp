@@ -143,10 +143,11 @@ void setup(){
 void loop(){
     String rgb = t.Data;
     t.readData();
-    // if (rgb != "0" && haveData){
-    //     RGB(rgb);
-    // }
-    // else animations.UpdateAnimations();
-    RGB("1");
-    // strip.Show();
+    if (rgb != "0" && haveData){
+        RGB(rgb);
+    }
+    else {
+        animations.UpdateAnimations();
+        strip.Show();
+    }
 }

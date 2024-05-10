@@ -5,20 +5,24 @@
 // #include <Servo.h>
 
 int grip1Val = 0, grip2Val = 0, grip3Val = 0, grip4Val = 0, 
-UpDownVal = 0, LeftVal = 0, RightVal = 180;
+UpDownVal = 180, LeftVal = 0, RightVal = 180;
 
 Robot r;
 
-Servo BallUp_Down;
+// Servo BallUp_Down;
 
 void setup(){
     r.init();
-    // BallUp_Down.attach(7);
-    // BallUp_Down.write(UpDownVal);
+    // BallUp_Down.attach(8);
 }
 
 void loop(){
-    r.loop(30);
+    r.loop(35);
+
+    // BallUp_Down.write(0);
+    // delay(1000);
+    // BallUp_Down.write(180);
+    // delay(1000);
     // r.BallSpin(255);
 
     // Grip1 is servo3
@@ -47,19 +51,19 @@ void loop(){
     // Serial.print("Grip3 : ");
     // Serial.println(grip3Val);
 
-    grip4Val = gamepad.Dpad_right ? grip4Val + 1 : grip4Val;
-    grip4Val = gamepad.Dpad_left ? grip4Val -1 :grip4Val;
-    grip4Val = grip4Val < 0 ? 0 : grip4Val > 180 ? 180 : grip4Val;
-    Grip4.write(grip4Val);
-    Serial.print("Grip4 : ");
-    Serial.println(grip4Val);
+    // grip4Val = gamepad.Dpad_right ? grip4Val + 1 : grip4Val;
+    // grip4Val = gamepad.Dpad_left ? grip4Val -1 :grip4Val;
+    // grip4Val = grip4Val < 0 ? 0 : grip4Val > 180 ? 180 : grip4Val;
+    // Grip4.write(grip4Val);
+    // Serial.print("Grip4 : ");
+    // Serial.println(grip4Val);
 
-    // UpDownVal = gamepad.Dpad_right ? UpDownVal + 1 : UpDownVal;
-    // UpDownVal = gamepad.Dpad_left ? UpDownVal -1 :UpDownVal;
-    // UpDownVal = UpDownVal < 0 ? 0 : UpDownVal > 180 ? 180 : UpDownVal;
-    // BallUP_DOWN.write(UpDownVal);
-    // Serial.print("UpDownVal : ");
-    // Serial.println(UpDownVal);
+    UpDownVal = gamepad.Dpad_right ? UpDownVal + 1 : UpDownVal;
+    UpDownVal = gamepad.Dpad_left ? UpDownVal -1 :UpDownVal;
+    UpDownVal = UpDownVal < 0 ? 0 : UpDownVal > 180 ? 180 : UpDownVal;
+    BallUP_DOWN.write(UpDownVal);
+    Serial.print("UpDownVal : ");
+    Serial.println(UpDownVal);
 
     // LeftVal = gamepad.Dpad_right ? LeftVal + 1 : LeftVal;
     // LeftVal = gamepad.Dpad_left ? LeftVal -1 :LeftVal;
@@ -79,4 +83,4 @@ void loop(){
     
     // Serial1.println("xxx");
     delay(75);
-}
+}   
