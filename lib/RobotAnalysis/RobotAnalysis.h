@@ -47,7 +47,7 @@ class RobotAnalysis{
             LastTime = CurrentTime;
             // xyzFloat corrGyrRaw = IMU.getCorrectedGyrRawValues();
             xyzFloat Angle = IMU.getGyrValues();
-            float AngleZ = abs(Angle.z) < 0.02 ? 0 : Angle.z;
+            float AngleZ = abs(Angle.z) < 0.035 ? 0 : Angle.z;
             // Serial.println(Dt, 6);
             // Serial.println(corrGyrRaw.z);
             // Serial.println(corrGyrRaw.z * Dt);

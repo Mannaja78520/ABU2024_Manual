@@ -15,6 +15,13 @@ void Controller::setPIDF(float Kp, float Ki, float Kd, float Kf) {
   this->Kf = Kf;
 }
 
+void Controller::reset(){
+  this->LastTime = 0;
+  this->Integral = 0;
+  this->LastError = 0;
+  this->LastTime = 0;
+}
+
 float Controller::Calculate(float setpoint, float measure){
   Setpoint = setpoint;
   return Calculate(setpoint - measure);
@@ -25,10 +32,11 @@ float Controller::Calculate(float error){
   // Serial.println(error);
   CurrentTime = millis();
   Dt = CurrentTime / 1000.0 - LastTime / 1000.0;
+  // Serial.println(Dt);
   LastTime = CurrentTime;
   Error = error;
   Integral += Error * Dt;
-  Integral = constrain(Integral, -150, 150);
+  Integral = constrain(Integral, -100, 100);
  if (error == 0) Integral = 0;
   float Derivative = (Error - LastError) / Dt;
   LastError = Error;

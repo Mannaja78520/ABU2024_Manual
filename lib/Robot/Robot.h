@@ -14,7 +14,6 @@
 #include <Utilize.h>
 
 DataFromZigbeeJoystickXbox gamepad;
-TransferData t;
 // DataFromZigbeeJoystickPlayStation gamepad;
 
 class Robot{

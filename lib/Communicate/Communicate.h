@@ -382,20 +382,20 @@ public:
                         return;
                     }
                     Serial.println("Checksum mismatch!");
-                    while (Serial1.available() > 0 && CurrentTime - LastTime < 50) {
-                        CurrentTime = millis();
-                        Serial1.read();
-                    }
-                    // Serial1.readStringUntil('\n');
+                    // while (Serial1.available() > 0 && CurrentTime - LastTime < 50) {
+                    //     CurrentTime = millis();
+                    //     Serial1.read();
+                    // }
+                    Serial1.readStringUntil('\n');
                     UseLastData();
                     return;
                 } 
                 Serial.println("Incomplete data received!");
-                while (Serial1.available() > 0 && CurrentTime - LastTime < 50) {
-                        CurrentTime = millis();
-                        Serial1.read();
-                    }
-                // Serial1.readStringUntil('\n');
+                // while (Serial1.available() > 0 && CurrentTime - LastTime < 50) {
+                //         CurrentTime = millis();
+                //         Serial1.read();
+                //     }
+                Serial1.readStringUntil('\n');
                 UseLastData();
                 return;
             }

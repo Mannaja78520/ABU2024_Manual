@@ -58,12 +58,12 @@ void loop(){
     // Serial.print("Grip4 : ");
     // Serial.println(grip4Val);
 
-    UpDownVal = gamepad.Dpad_right ? UpDownVal + 1 : UpDownVal;
-    UpDownVal = gamepad.Dpad_left ? UpDownVal -1 :UpDownVal;
-    UpDownVal = UpDownVal < 0 ? 0 : UpDownVal > 180 ? 180 : UpDownVal;
-    BallUP_DOWN.write(UpDownVal);
-    Serial.print("UpDownVal : ");
-    Serial.println(UpDownVal);
+    // UpDownVal = gamepad.Dpad_right ? UpDownVal + 1 : UpDownVal;
+    // UpDownVal = gamepad.Dpad_left ? UpDownVal -1 :UpDownVal;
+    // UpDownVal = UpDownVal < 0 ? 0 : UpDownVal > 180 ? 180 : UpDownVal;
+    // BallUP_DOWN.write(UpDownVal);
+    // Serial.print("UpDownVal : ");
+    // Serial.println(UpDownVal);
 
     // LeftVal = gamepad.Dpad_right ? LeftVal + 1 : LeftVal;
     // LeftVal = gamepad.Dpad_left ? LeftVal -1 :LeftVal;
