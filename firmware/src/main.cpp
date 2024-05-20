@@ -50,9 +50,12 @@
 
 //------------------------------ < Define > -------------------------------------//
 
+rcl_publisher_t debug_motor_publisher;
+
 rcl_subscription_t gripper_subscriber;
 rcl_subscription_t moveMotor_subscriber;
 
+geometry_msgs__msg__Twist debug_motor_msg;
 geometry_msgs__msg__Twist gripper_msg;
 geometry_msgs__msg__Twist moveMotor_msg;
 
@@ -82,7 +85,7 @@ Motor motor3(PWM_FREQUENCY, PWM_BITS, MOTOR3_INV, MOTOR3_BREAK, MOTOR3_PWM, MOTO
 Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTOR4_INV, MOTOR4_BREAK, MOTOR4_PWM, MOTOR4_IN_A, MOTOR4_IN_B);
 
 // BallSpin
-Motor spinBall(PWM_FREQUENCY, PWM_BITS, spinBall_INV, spinBall_BREAK, spinBall_PWM, spinBall_IN_A, -1);
+Motor spinBall(PWM_FREQUENCY, PWM_BITS, spinBall_INV, spinBall_BREAK, spinBall_PWM, -1, -1);
 
 // Harvest Servo
 Servo Grip1;
@@ -101,6 +104,7 @@ void rclErrorLoop();
 void syncTime();
 bool createEntities();
 bool destroyEntities();
+void publishData();
 struct timespec getTime();
 
 void MovePower(int, int, int, int);
@@ -118,29 +122,29 @@ void setup()
     set_microros_serial_transports(Serial);
 
     // Harvest
-    // Grip1.attach(SERVO1);
-    // Grip2.attach(SERVO2);
-    // Grip3.attach(SERVO3);
-    // Grip4.attach(SERVO4);
-    // Grip1.setPeriodHertz(50);
-    // Grip2.setPeriodHertz(50);
-    // Grip3.setPeriodHertz(50);
-    // Grip4.setPeriodHertz(50);
-    // Grip1.write(0);
-    // Grip2.write(0);
-    // Grip3.write(0);
-    // Grip4.write(0);
+    Grip1.attach(SERVO1);
+    Grip2.attach(SERVO2);
+    Grip3.attach(SERVO3);
+    Grip4.attach(SERVO4);
+    Grip1.setPeriodHertz(50);
+    Grip2.setPeriodHertz(50);
+    Grip3.setPeriodHertz(50);
+    Grip4.setPeriodHertz(50);
+    Grip1.write(0);
+    Grip2.write(0);
+    Grip3.write(0);
+    Grip4.write(0);
 
     // // Ball
-    // BallUP_DOWN.attach(SERVO5);
-    // BallLeftGrip.attach(SERVO6);
-    // BallRightGrip.attach(SERVO7);
-    // BallUP_DOWN.setPeriodHertz(50);
-    // BallLeftGrip.setPeriodHertz(50);
-    // BallRightGrip.setPeriodHertz(50);
-    // BallUP_DOWN.write(180);
-    // BallLeftGrip.write(180);
-    // BallRightGrip.write(0);
+    BallUP_DOWN.attach(SERVO5);
+    BallLeftGrip.attach(SERVO6);
+    BallRightGrip.attach(SERVO7);
+    BallUP_DOWN.setPeriodHertz(50);
+    BallLeftGrip.setPeriodHertz(50);
+    BallRightGrip.setPeriodHertz(50);
+    BallUP_DOWN.write(180);
+    BallLeftGrip.write(180);
+    BallRightGrip.write(0);
 }
 
 void loop()
@@ -200,6 +204,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
         HarvestGrip();
         KeepBall();
         AdjustArm();
+        publishData();
     }
 }
 
@@ -225,7 +230,13 @@ bool createEntities()
 
     // create node
     RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
-    // create odometry publisher
+
+    RCCHECK(rclc_publisher_init_default(
+        &debug_motor_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "debug/motor"));
+
     RCCHECK(rclc_subscription_init_default(
         &gripper_subscriber,
         &node,
@@ -271,6 +282,7 @@ bool destroyEntities()
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
+    rcl_publisher_fini(&debug_motor_publisher, &node);
     rcl_subscription_fini(&gripper_subscriber, &node);
     rcl_subscription_fini(&moveMotor_subscriber, &node);
     rcl_node_fini(&node);
@@ -281,8 +293,19 @@ bool destroyEntities()
     return true;
 }
 
+void publishData()
+{
+    struct timespec time_stamp = getTime();
+    RCSOFTCHECK(rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL));
+}
+
 void Move()
 {
+    debug_motor_msg.linear.x = moveMotor_msg.linear.x;
+    debug_motor_msg.linear.y = moveMotor_msg.linear.y;
+    debug_motor_msg.linear.z = moveMotor_msg.linear.z;
+    debug_motor_msg.angular.x = moveMotor_msg.angular.x;
+
     if (((millis() - prev_cmd_time) >= 200))
     {
         moveMotor_msg.linear.x = 0.0;
