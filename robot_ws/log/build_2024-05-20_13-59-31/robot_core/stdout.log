@@ -1,0 +1,35 @@
+running egg_info
+creating ../../build/robot_core/robot_core.egg-info
+writing ../../build/robot_core/robot_core.egg-info/PKG-INFO
+writing dependency_links to ../../build/robot_core/robot_core.egg-info/dependency_links.txt
+writing entry points to ../../build/robot_core/robot_core.egg-info/entry_points.txt
+writing requirements to ../../build/robot_core/robot_core.egg-info/requires.txt
+writing top-level names to ../../build/robot_core/robot_core.egg-info/top_level.txt
+writing manifest file '../../build/robot_core/robot_core.egg-info/SOURCES.txt'
+reading manifest file '../../build/robot_core/robot_core.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../../build/robot_core/robot_core.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build
+creating /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib
+creating /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib/robot_core
+copying robot_core/publisher_member_function.py -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib/robot_core
+copying robot_core/__init__.py -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib/robot_core
+running install
+running install_lib
+creating /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core
+copying /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib/robot_core/publisher_member_function.py -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core
+copying /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib/robot_core/__init__.py -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core
+byte-compiling /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core/publisher_member_function.py to publisher_member_function.cpython-310.pyc
+byte-compiling /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/share/ament_index
+creating /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/share/ament_index/resource_index
+creating /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/share/ament_index/resource_index/packages
+copying resource/robot_core -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/share/ament_index/resource_index/packages
+copying package.xml -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/share/robot_core
+running install_egg_info
+Copying ../../build/robot_core/robot_core.egg-info to /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core-0.0.0-py3.10.egg-info
+running install_scripts
+writing list of installed files to '/home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/install.log'
