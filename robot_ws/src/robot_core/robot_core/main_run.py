@@ -359,19 +359,17 @@ class Zigbee(Node):
         x = self.keepHarvest()
         y = self.keepBall()
         z = self.AdjustArm()
-        gripper_msg.linear.x = float(x) if x is not None else 0.0
-        gripper_msg.linear.y = float(y) if y is not None else 0.0
-        gripper_msg.linear.z = float(z) if z is not None else 0.0
+        gripper_msg.linear.x = float(x) if x else 0.0
+        gripper_msg.linear.y = float(y) if y else 0.0
+        gripper_msg.linear.z = float(z) if z else 0.0
         gripper_msg.angular.z = self.SpinBallSpeed
         self.sent_gripper.publish(gripper_msg)
-        
 
 def main():
     rclpy.init()
 
-    sub = Zigbee()
+    sub = Zigbee()    
     rclpy.spin(sub)
-
     rclpy.shutdown()
 
 
