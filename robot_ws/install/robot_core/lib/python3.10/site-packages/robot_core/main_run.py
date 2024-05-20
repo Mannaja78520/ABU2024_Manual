@@ -220,7 +220,7 @@ class Zigbee(Node):
                 ser.readline().decode('utf-8').rstrip()
                 self.use_last_data()
                 return
-            print("Incomplete data receivednot ")
+            print("Incomplete data received ")
             ser.readline().decode('utf-8').rstrip()
             self.use_last_data()
             return
@@ -263,29 +263,29 @@ class Zigbee(Node):
         rt = self.right_trigger > 0.3
         if not(lb or rb or rt or lt) :
             self.K_Pressed = False
-            return x
+            return float(x)
         if self.K_Pressed:
-            return x
+            return float(x)
         if lb and rb:
             x = 1.0
-            IS_13_Keep = IS_24_Keep = True
-            return x
-        if IS_13_Keep :
+            self.IS_13_Keep = self.IS_24_Keep = True
+            return float(x)
+        if self.IS_13_Keep :
             if lb or lt :
                 if lt :
                     x = 2.0
-                    return x
+                    return float(x)
                 x = 3.0
-                IS_13_Keep = False
-                return x
-        if IS_24_Keep :
+                self.IS_13_Keep = False
+                return float(x)
+        if self.IS_24_Keep :
             if rb or rt :
                 if rt:
                     x = 4.0
-                    return x
+                    return float(x)
                 x = 5.0
-                IS_24_Keep = False
-                return x
+                self.IS_24_Keep = False
+                return float(x)
             
     def keepBall(self):
         y = 0.0
@@ -354,9 +354,12 @@ class Zigbee(Node):
         self.sent_drive.publish(movement_msg)
         
         gripper_msg = Twist()
-        gripper_msg.linear.x = self.keepHarvest()
-        gripper_msg.linear.y = self.keepBall()
-        gripper_msg.linear.z = self.AdjustArm()
+        x = self.keepHarvest()
+        y = self.keepBall()
+        z = self.AdjustArm()
+        gripper_msg.linear.x = float(x) if x is not None else 0.0
+        gripper_msg.linear.y = float(y) if y is not None else 0.0
+        gripper_msg.linear.z = float(z) if z is not None else 0.0
         gripper_msg.angular.z = self.SpinBallSpeed
         self.sent_gripper.publish(gripper_msg)
         
