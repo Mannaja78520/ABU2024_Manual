@@ -1,0 +1,25 @@
+[0.568s] Invoking command in '/home/mannaja/coding/project/ABU2024_Manual/robot_ws/src/robot_core': PYTHONPATH=/home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/prefix_override:/home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/robot_core build --build-base /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build install --record /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/install.log --single-version-externally-managed install_data
+[0.805s] running egg_info
+[0.806s] writing ../../build/robot_core/robot_core.egg-info/PKG-INFO
+[0.806s] writing dependency_links to ../../build/robot_core/robot_core.egg-info/dependency_links.txt
+[0.806s] writing entry points to ../../build/robot_core/robot_core.egg-info/entry_points.txt
+[0.806s] writing requirements to ../../build/robot_core/robot_core.egg-info/requires.txt
+[0.806s] writing top-level names to ../../build/robot_core/robot_core.egg-info/top_level.txt
+[0.808s] reading manifest file '../../build/robot_core/robot_core.egg-info/SOURCES.txt'
+[0.809s] adding license file 'LICENSE'
+[0.810s] writing manifest file '../../build/robot_core/robot_core.egg-info/SOURCES.txt'
+[0.810s] running build
+[0.810s] running build_py
+[0.810s] copying robot_core/main_run.py -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib/robot_core
+[0.810s] running install
+[0.811s] running install_lib
+[0.812s] copying /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build/lib/robot_core/main_run.py -> /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core
+[0.812s] byte-compiling /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core/main_run.py to main_run.cpython-310.pyc
+[0.815s] running install_data
+[0.815s] running install_egg_info
+[0.817s] removing '/home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core-0.0.0-py3.10.egg-info' (and everything under it)
+[0.817s] Copying ../../build/robot_core/robot_core.egg-info to /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages/robot_core-0.0.0-py3.10.egg-info
+[0.818s] running install_scripts
+[0.836s] Installing runRobot script to /home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/robot_core
+[0.837s] writing list of installed files to '/home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/install.log'
+[0.855s] Invoked command in '/home/mannaja/coding/project/ABU2024_Manual/robot_ws/src/robot_core' returned '0': PYTHONPATH=/home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/prefix_override:/home/mannaja/coding/project/ABU2024_Manual/robot_ws/install/robot_core/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/robot_core build --build-base /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/build install --record /home/mannaja/coding/project/ABU2024_Manual/robot_ws/build/robot_core/install.log --single-version-externally-managed install_data

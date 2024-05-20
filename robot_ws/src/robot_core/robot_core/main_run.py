@@ -156,7 +156,7 @@ class Zigbee(Node):
                 index = 0
                 sum_of_data = 0
                 for token in tokens[:21]:
-                    data = int(token)
+                    data = data = int(token) if token else 0
                     sum_of_data += abs(data)
                     if index == 0:
                         checksum = data
@@ -269,22 +269,23 @@ class Zigbee(Node):
         if lb and rb:
             x = 1.0
             self.IS_13_Keep = self.IS_24_Keep = True
+            time.sleep(0.35)
             return float(x)
         if self.IS_13_Keep :
             if lb or lt :
+                self.IS_13_Keep = False
                 if lt :
                     x = 2.0
                     return float(x)
                 x = 3.0
-                self.IS_13_Keep = False
                 return float(x)
         if self.IS_24_Keep :
             if rb or rt :
+                self.IS_24_Keep = False
                 if rt:
                     x = 4.0
                     return float(x)
                 x = 5.0
-                self.IS_24_Keep = False
                 return float(x)
             
     def keepBall(self):
@@ -325,15 +326,16 @@ class Zigbee(Node):
     def AdjustArm(self):
         z = 0.0
         x = self.X
-        if self.ChargeBall and self.ArmUp and x: # KickBall
-            z = 3.0
-            return z
         if (not x) :
             self.X_Pressed = False
             return float(z)
         if (self.X_Pressed) :
             return float(z)
         self.X_Pressed = True
+        if self.ChargeBall and self.ArmUp and x: # KickBall
+            z = 3.0
+            self.ChargeBall = self.ArmUp = self.GotBall = False
+            return z
         if (not self.ArmUp and not self.ChargeBall):
             z = 1.0
             self.ArmUp = True
@@ -341,7 +343,7 @@ class Zigbee(Node):
         
         if(self.ArmUp and not self.ChargeBall):
             z = 2.0
-            self.ArmUp = False
+            self.ArmUp = self.GotBall = self.ChargeBall = False
             return float(z)
         
     def sent_data(self):  # publisher drive topic
