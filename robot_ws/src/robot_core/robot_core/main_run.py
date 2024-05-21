@@ -6,15 +6,61 @@ import pygame
 import serial
 import time
 
+import lgpio
+
+from mpu9250_jmdev.registers import *
+from mpu9250_jmdev.mpu_9250 import MPU9250
+
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from rclpy import qos
 
+# class Calculate():
+    
 
 class Zigbee(Node):
     def __init__(self):
-        super().__init__("xbox_control_node")
+        # super().__init__("xbox_control_node")
+
+        self.maxSpeed = 1023.0
+        self.NormalSpeed = 1.0
+        self.turnSpeed = 0.5
+
+        # open gpio chip
+        self.grip_slide = 23
+        self.grip_up    = 24
+        self.h = lgpio.gpiochip_open(0)
+        lgpio.gpio_claim_output(self.h, self.grip_slide)
+        lgpio.gpio_claim_output(self.h, self.grip_up)
+        lgpio.gpio_write(self.h, self.grip_slide, 1)
+        lgpio.gpio_write(self.h, self.grip_up, 1)
+        
+        self.Y_Pressed = False
+        self.ISGripUP = False
+        self.B_Pressed = False
+        self.ISGripSlide = False
+        
+        self.mpu = MPU9250( 
+            address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
+            address_mpu_slave=None, 
+            bus=1, 
+            gfs=GFS_1000, 
+            afs=AFS_8G, 
+            )
+        
+        self.mpu.configure()
+        self.mpu.calibrate()
+        self.mpu.configure()
+        self.mpu.gbias
+        
+        self.CurrentTime = time.time()
+        self.yaw = 0
+        self.LastTime = 0
+        self.setpoint = 0
+        self.UseIMU = False
+        self.M_Pressed = False
+
         self.lx = self.ly = self.rx = self.ry = 0
         self.right_trigger = self.left_trigger = 0
 
@@ -58,7 +104,7 @@ class Zigbee(Node):
         self.sent_drive_timer = self.create_timer(0.03, self.sent_data)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
         
-        self.ser = self.initialize_serial('/dev/ttyUSB0', 230400)
+        self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
         
     def debug_callback(self, msg_in):
         self.slope = msg_in.data
@@ -151,20 +197,19 @@ class Zigbee(Node):
         
 
     def receive_data(self, ser):
-        current_time = time.time()
         expected_data_length = 40
         have_data_from_controller = ser.in_waiting
         if have_data_from_controller > 0:
             # reset_variables()
-            self.last_data_time = current_time
+            self.last_data_time = self.CurrentTime
             received_data = ser.readline().strip().decode()
             if expected_data_length <= len(received_data) <= 80:
-                self.last_time = current_time
+                self.last_time = self.CurrentTime
                 tokens = received_data.split(",")
                 index = 0
                 sum_of_data = 0
                 for token in tokens[:21]:
-                    data = data = int(token) if token else 0
+                    data = int(token) if token else 0
                     sum_of_data += abs(data)
                     if index == 0:
                         checksum = data
@@ -221,7 +266,7 @@ class Zigbee(Node):
                     self.dpad_left = right_left_dpad == -1
                     self.dpad_up = up_down_dpad == 1
                     self.dpad_down = up_down_dpad == -1
-                    # compare_data(current_time)
+                    # compare_data(self.CurrentTime)
                     self.update_last_data()
                     return
                 print("Checksum mismatchnot ")
@@ -232,7 +277,7 @@ class Zigbee(Node):
             ser.readline().decode('utf-8').rstrip()
             self.use_last_data()
             return
-        if current_time - self.last_data_time < 300:
+        if self.CurrentTime - self.last_data_time < 300:
             have_data_from_controller = True
             self.use_last_data()
             return
@@ -240,28 +285,116 @@ class Zigbee(Node):
         
     
     # def start:
+    
+    def imu(self):
+        self.CurrentTime = time.time()
+        Dt = self.CurrentTime - self.LastTime
+        self.LastTime = self.CurrentTime
+        gyro_data = self.mpu.readGyroscopeMaster()
+        
+        calibrate_gyrodata = 0 if abs(gyro_data[2]) < 0.5 else gyro_data[2]
+        
+        calibrate_gyrodata = math.radians(calibrate_gyrodata)
+        
+        self.yaw += calibrate_gyrodata * Dt
+        
+        self.yaw -= math.pi*2 if self.yaw >  math.pi else self.yaw
+        self.yaw += math.pi*2 if self.yaw < -math.pi else self.yaw
+        
+        if (self.screen):
+            self.yaw = 0
+
+        m = self.menu
+        if (not m) :
+            self.M_Pressed = False
+            return
+        
+        if (self.M_Pressed) :
+            return
+        self.M_Pressed = True
+        if(not self.UseIMU) :
+            self.UseIMU = True
+            # c.reset()
+            return
+        self.UseIMU = False
+            
     def MoveRobot(self):
-        maxSpeed = 1023.0
-        NormalSpeed = 1.0
-        turnSpeed = 0.5
-        lx =  self.lx * NormalSpeed
-        ly =  self.ly * NormalSpeed
-        rx =  self.rx * turnSpeed
+        lx =  self.lx * self.NormalSpeed
+        ly =  self.ly * self.NormalSpeed * -1
+        rx =  self.rx * self.turnSpeed
 
-        # lx = gamepad.Dpad_left  ? -0.75 : 
-        #     gamepad.Dpad_right ?  0.75 : lx
-        # ly = gamepad.Dpad_down  ? -0.75 :
-        #     gamepad.Dpad_up    ?  0.75 : ly
+        ly =  0.4 if self.dpad_up else ly
+        ly = -0.4 if self.dpad_down else ly
+        lx =  0.4 if self.dpad_right else lx
+        lx = -0.4 if self.dpad_left else lx
 
-        # setpoint = yaw
+        self.setpoint = self.yaw if rx != 0 else self.setpoint
 
         D = max(abs(lx)+abs(ly)+abs(rx), 1.0)
 
-        motor1Speed = float("{:.1f}".format((ly + lx + rx) / D * maxSpeed))
-        motor2Speed = float("{:.1f}".format((ly - lx - rx) / D * maxSpeed))
-        motor3Speed = float("{:.1f}".format((ly - lx + rx) / D * maxSpeed))
-        motor4Speed = float("{:.1f}".format((ly + lx - rx) / D * maxSpeed))
+        motor1Speed = float("{:.1f}".format((ly + lx + rx) / D * self.maxSpeed))
+        motor2Speed = float("{:.1f}".format((ly - lx - rx) / D * self.maxSpeed))
+        motor3Speed = float("{:.1f}".format((ly - lx + rx) / D * self.maxSpeed))
+        motor4Speed = float("{:.1f}".format((ly + lx - rx) / D * self.maxSpeed))
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
+    
+    def MoveRobot_IMU(self):
+        lx =  self.lx * self.NormalSpeed
+        ly =  self.ly * self.NormalSpeed * -1
+        rx =  self.rx * self.turnSpeed
+
+        ly =  0.4 if self.dpad_up else ly
+        ly = -0.4 if self.dpad_down else ly
+        lx =  0.4 if self.dpad_right else lx
+        lx = -0.4 if self.dpad_left else lx
+        
+        x2  =  (math.cos(-self.yaw) * lx) - (math.sin(-self.yaw) * ly)
+        y2  =  (math.sin(-self.yaw) * lx) + (math.cos(-self.yaw) * ly)
+        
+        # R = c.Calculate(self.yaw - setpoint)
+        R = rx
+        lastRXTime = self.CurrentTime if rx != 0 else lastRXTime
+        if (rx != 0 or  self.CurrentTime - lastRXTime < 300) :
+            R = rx
+            self.setpoint = self.yaw
+
+        D = max(abs(lx)+abs(ly)+abs(R), 1.0)
+
+        motor1Speed = float("{:.1f}".format((ly + lx + R) / D * self.maxSpeed))
+        motor2Speed = float("{:.1f}".format((ly - lx - R) / D * self.maxSpeed))
+        motor3Speed = float("{:.1f}".format((ly - lx + R) / D * self.maxSpeed))
+        motor4Speed = float("{:.1f}".format((ly + lx - R) / D * self.maxSpeed))
+        return motor1Speed, motor2Speed, motor3Speed, motor4Speed
+    
+    def Slide_Transform(self):
+        b = self.B
+        if (not b) :
+            self.B_Pressed = False
+            return
+        if (self.B_Pressed) : 
+            return
+        self.B_Pressed = True
+        if(not self.ISGripSlide) :
+            lgpio.gpio_write(self.h, self.grip_slide, 0)
+            self.ISGripSlide = True
+            return
+        lgpio.gpio_write(self.h, self.grip_slide, 1)
+        self.ISGripSlide = False
+        
+    def UpDown_Transform(self):
+        y = self.Y
+        if (not y) :
+            self.Y_Pressed = False
+            return
+        if (self.Y_Pressed) :
+            return
+        self.Y_Pressed = True
+        if (not self.ISGripUP) :
+            lgpio.gpio_write(self.h, self.grip_up, 0)
+            self.ISGripUP = True
+            return
+        lgpio.gpio_write(self.h, self.grip_up, 1)
+        self.ISGripUP = False
 
     def keepHarvest(self):
         x = 0.0
@@ -298,8 +431,7 @@ class Zigbee(Node):
             
     def keepBall(self):
         y = 0.0
-        CurrentTime = time.time()
-        MTime = CurrentTime - self.MacroTime
+        MTime = self.CurrentTime - self.MacroTime
         if (MTime > 1 and self.GotBall and not self.ChargeBall) :
             y = 3.0
             # BallUP_DOWN.write(155)
@@ -322,10 +454,11 @@ class Zigbee(Node):
         self.A_Pressed = True
         if(not self.GotBall and not self.ArmUp) :
             y = 1.0
-            self.MacroTime = CurrentTime
+            self.MacroTime = self.CurrentTime
             self.GotBall = True
             return y
         y = 2.0
+        
         self.ArmUp = False
         self.GotBall = False
         self.ChargeBall = False
@@ -357,8 +490,12 @@ class Zigbee(Node):
     def sent_data(self):  # publisher drive topic
         movement_msg = Twist()
         
+        self.imu()
         self.reset_variable()
         self.receive_data(self.ser)
+        
+        self.Slide_Transform()
+        self.UpDown_Transform()
         
         movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
         self.sent_drive.publish(movement_msg)

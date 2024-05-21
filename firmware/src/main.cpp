@@ -107,7 +107,7 @@ bool destroyEntities();
 void publishData();
 struct timespec getTime();
 
-void MovePower(int, int, int, int);
+void MovePower(float, float, float, float);
 void Move();
 void HarvestGrip();
 void KeepBall();
@@ -185,15 +185,15 @@ void loop()
     }
 }
 
-void MovePower(int Motor1Power, int Motor2Speed, int Motor3Speed, int Motor4Speed)
+//------------------------------ < Fuction > -------------------------------------//
+
+void MovePower(float Motor1Power, float Motor2Speed, float Motor3Speed, float Motor4Speed)
 {
     motor1.spin(Motor1Power);
     motor2.spin(Motor2Speed);
     motor3.spin(Motor3Speed);
     motor4.spin(Motor4Speed);
 }
-
-//------------------------------ < Fuction > -------------------------------------//
 
 void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
 {
@@ -231,7 +231,7 @@ bool createEntities()
     // create node
     RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
 
-    RCCHECK(rclc_publisher_init_default(
+    RCCHECK(rclc_publisher_init_best_effort(
         &debug_motor_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
@@ -295,28 +295,27 @@ bool destroyEntities()
 
 void publishData()
 {
-    struct timespec time_stamp = getTime();
-    RCSOFTCHECK(rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL));
-}
-
-void Move()
-{
     debug_motor_msg.linear.x = moveMotor_msg.linear.x;
     debug_motor_msg.linear.y = moveMotor_msg.linear.y;
     debug_motor_msg.linear.z = moveMotor_msg.linear.z;
     debug_motor_msg.angular.x = moveMotor_msg.angular.x;
+    // struct timespec time_stamp = getTime();
+    rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
+}
 
-    if (((millis() - prev_cmd_time) >= 200))
-    {
-        moveMotor_msg.linear.x = 0.0;
-        moveMotor_msg.linear.y = 0.0;
-        moveMotor_msg.linear.z = 0.0;
-        moveMotor_msg.angular.x = 0.0;
-    }
-    int motor1Speed = moveMotor_msg.linear.x;
-    int motor2Speed = moveMotor_msg.linear.y;
-    int motor3Speed = moveMotor_msg.linear.z;
-    int motor4Speed = moveMotor_msg.angular.x;
+void Move()
+{
+    // if (((millis() - prev_cmd_time) >= 200))
+    // {
+    //     moveMotor_msg.linear.x = 0.0;
+    //     moveMotor_msg.linear.y = 0.0;
+    //     moveMotor_msg.linear.z = 0.0;
+    //     moveMotor_msg.angular.x = 0.0;
+    // }
+    float motor1Speed = moveMotor_msg.linear.x;
+    float motor2Speed = moveMotor_msg.linear.y;
+    float motor3Speed = moveMotor_msg.linear.z;
+    float motor4Speed = moveMotor_msg.angular.x;
     MovePower(motor1Speed, motor2Speed,
               motor3Speed, motor4Speed);
 }
@@ -327,10 +326,10 @@ void HarvestGrip()
     int x = gripper_msg.linear.x;
     if (x == 1)
     {
-        Grip1.write(49);
+        Grip1.write(111);
         Grip2.write(112);
         Grip3.write(111);
-        Grip4.write(55);
+        Grip4.write(111);
         delay(300);
         return;
     }
@@ -338,7 +337,7 @@ void HarvestGrip()
     {
         if (x == 2)
         {
-            Grip1.write(25);
+            Grip1.write(86);
             Grip3.write(86);
             delay(dropDelay);
         }
@@ -350,8 +349,8 @@ void HarvestGrip()
     {
         if (x == 4)
         {
-            Grip2.write(90);
-            Grip4.write(30);
+            Grip2.write(86);
+            Grip4.write(86);
             delay(dropDelay);
         }
         Grip2.write(0);
@@ -365,14 +364,14 @@ void KeepBall()
     int y = gripper_msg.linear.y;
     if (y == 1)
     {
-        BallLeftGrip.write(87);
-        BallRightGrip.write(95);
+        BallLeftGrip.write(130);
+        BallRightGrip.write(50);
         return;
     }
     else if (y == 2)
     {
         spinBall.spin(0);
-        BallUP_DOWN.write(75);
+        BallUP_DOWN.write(70);
         delay(400);
         BallLeftGrip.write(180);
         BallRightGrip.write(0);
@@ -380,12 +379,12 @@ void KeepBall()
     }
     else if (y == 3)
     {
-        BallUP_DOWN.write(155);
+        BallUP_DOWN.write(160);
         return;
     }
     else if (y == 4)
     {
-        BallUP_DOWN.write(125);
+        BallUP_DOWN.write(115);
         return;
     }
     else if (y == 5)
@@ -403,7 +402,7 @@ void AdjustArm()
         BallUP_DOWN.write(180);
         delay(500);
         spinBall.spin(0);
-        BallUP_DOWN.write(75);
+        BallUP_DOWN.write(70);
         delay(500);
         BallLeftGrip.write(180);
         BallRightGrip.write(0);
@@ -415,7 +414,7 @@ void AdjustArm()
     }
     else if (z == 2)
     {
-        BallUP_DOWN.write(75);
+        BallUP_DOWN.write(70);
         BallLeftGrip.write(180);
         BallRightGrip.write(0);
     }
