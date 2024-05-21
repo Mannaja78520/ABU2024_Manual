@@ -69,6 +69,7 @@ rcl_init_options_t init_options;
 unsigned long long time_offset = 0;
 unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
+unsigned long LastHarvest_time = 0;
 
 enum states
 {
@@ -202,8 +203,8 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     {
         Move();
         HarvestGrip();
-        KeepBall();
-        AdjustArm();
+        // KeepBall();
+        // AdjustArm();
         publishData();
     }
 }
@@ -272,7 +273,7 @@ bool createEntities()
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
 
     // synchronize time with the agent
-    // syncTime();
+    syncTime();
 
     return true;
 }
@@ -326,11 +327,11 @@ void HarvestGrip()
     int x = gripper_msg.linear.x;
     if (x == 1)
     {
-        Grip1.write(111);
+        Grip1.write(112);
         Grip2.write(112);
-        Grip3.write(111);
-        Grip4.write(111);
-        delay(300);
+        Grip3.write(112);
+        Grip4.write(112);
+        // delay(300);
         return;
     }
     else if (x == 2 || x == 3)
@@ -339,7 +340,7 @@ void HarvestGrip()
         {
             Grip1.write(86);
             Grip3.write(86);
-            delay(dropDelay);
+            // delay(dropDelay);
         }
         Grip1.write(0);
         Grip3.write(0);
@@ -351,7 +352,7 @@ void HarvestGrip()
         {
             Grip2.write(86);
             Grip4.write(86);
-            delay(dropDelay);
+            // delay(dropDelay);
         }
         Grip2.write(0);
         Grip4.write(0);
@@ -365,14 +366,14 @@ void KeepBall()
     if (y == 1)
     {
         BallLeftGrip.write(130);
-        BallRightGrip.write(50);
+        BallRightGrip่.write(50);
         return;
     }
     else if (y == 2)
     {
         spinBall.spin(0);
         BallUP_DOWN.write(70);
-        delay(400);
+        // delay(400);
         BallLeftGrip.write(180);
         BallRightGrip.write(0);
         return;
@@ -400,10 +401,10 @@ void AdjustArm()
     if (z == 3)
     {
         BallUP_DOWN.write(180);
-        delay(500);
+        // delay(500);
         spinBall.spin(0);
         BallUP_DOWN.write(70);
-        delay(500);
+        // delay(500);
         BallLeftGrip.write(180);
         BallRightGrip.write(0);
         return;
@@ -459,5 +460,5 @@ void flashLED(int n_times)
         // digitalWrite(LED_PIN, LOW);
         // delay(150);
     }
-    delay(1000);
+    // delay(1000);
 }

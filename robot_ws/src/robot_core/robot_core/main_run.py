@@ -21,7 +21,7 @@ from rclpy import qos
 
 class Zigbee(Node):
     def __init__(self):
-        # super().__init__("xbox_control_node")
+        super().__init__("Robot_Zigbee_Control_Node")
 
         self.maxSpeed = 1023.0
         self.NormalSpeed = 1.0
@@ -107,7 +107,7 @@ class Zigbee(Node):
         self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
         
     def debug_callback(self, msg_in):
-        self.slope = msg_in.data
+        self.slope = 0
         
     def reset_variable(self):
         self.lx = 0
@@ -410,7 +410,7 @@ class Zigbee(Node):
         if lb and rb:
             x = 1.0
             self.IS_13_Keep = self.IS_24_Keep = True
-            time.sleep(0.35)
+            # time.sleep(0.35)
             return float(x)
         if self.IS_13_Keep :
             if lb or lt :
@@ -490,7 +490,7 @@ class Zigbee(Node):
     def sent_data(self):  # publisher drive topic
         movement_msg = Twist()
         
-        self.imu()
+        # self.imu()
         self.reset_variable()
         self.receive_data(self.ser)
         
