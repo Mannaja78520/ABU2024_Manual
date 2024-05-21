@@ -460,5 +460,5 @@ void flashLED(int n_times)
         // digitalWrite(LED_PIN, LOW);
         // delay(150);
     }
-    // delay(1000);
+    delay(1000);
 }

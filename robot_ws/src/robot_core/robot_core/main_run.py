@@ -90,10 +90,10 @@ class Zigbee(Node):
         
         self.SpinBallSpeed = 1023.0
         
-        self.debug = self.create_subscription(
-            Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
-        )
-        self.debug
+        # self.debug = self.create_subscription(
+        #     Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
+        # )
+        # self.debug
         
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
@@ -106,8 +106,8 @@ class Zigbee(Node):
         
         self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
         
-    def debug_callback(self, msg_in):
-        self.slope = 0
+    # def debug_callback(self, msg_in):
+    #     self.slope = 0
         
     def reset_variable(self):
         self.lx = 0
