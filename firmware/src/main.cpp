@@ -366,7 +366,7 @@ void KeepBall()
     if (y == 1)
     {
         BallLeftGrip.write(130);
-        BallRightGrip่.write(50);
+        BallRightGrip.write(50);
         return;
     }
     else if (y == 2)
