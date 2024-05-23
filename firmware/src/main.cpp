@@ -52,11 +52,11 @@
 
 rcl_publisher_t debug_motor_publisher;
 
-rcl_subscription_t gripper_subscriber;
+// rcl_subscription_t gripper_subscriber;
 rcl_subscription_t moveMotor_subscriber;
 
 geometry_msgs__msg__Twist debug_motor_msg;
-geometry_msgs__msg__Twist gripper_msg;
+// geometry_msgs__msg__Twist gripper_msg;
 geometry_msgs__msg__Twist moveMotor_msg;
 
 rclc_executor_t executor;
@@ -300,7 +300,7 @@ void publishData()
     debug_motor_msg.linear.y = moveMotor_msg.linear.y;
     debug_motor_msg.linear.z = moveMotor_msg.linear.z;
     debug_motor_msg.angular.x = moveMotor_msg.angular.x;
-    struct timespec time_stamp = getTime();
+    // struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
 }
 

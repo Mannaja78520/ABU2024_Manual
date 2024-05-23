@@ -120,10 +120,9 @@ class mainRun(Node):
         
         self.SpinBallSpeed = 1023.0
         
-        # self.debug = self.create_subscription(
-        #     Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
-        # )
-        # self.debug
+        self.debug = self.create_subscription(
+            Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
+        )
         
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
@@ -135,6 +134,9 @@ class mainRun(Node):
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
         
         self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
+        
+    def debug_callback(self):
+        return
 
     def reset_variable(self):
         self.lx = 0
