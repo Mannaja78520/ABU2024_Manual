@@ -574,16 +574,16 @@ class mainRun(Node):
         
     def sent_to_microros(self):  # publisher drive topic
         movement_msg = Twist()
+        self.reset_variable()
+        self.receive_data(self.ser)
         self.Emergency_StartStop()
-        if not self.EnergyStop:
+        if not self.EmergencyStop:
             self.imu()
-            self.reset_variable()
-            self.receive_data(self.ser)
             
             self.Slide_Transform()
             self.UpDown_Transform()
             self.keepHarvest()
-            if not(self.ISGripSlide or self.ISGrip):
+            if not(self.ISGripSlide or self.ISGripUP):
                 self.keepBall()
             self.AdjustArm()
             

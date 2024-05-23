@@ -308,13 +308,13 @@ void publishData()
 
 void Move()
 {
-    if (((millis() - prev_cmd_time) >= 200))
-    {
-        moveMotor_msg.linear.x = 0.0;
-        moveMotor_msg.linear.y = 0.0;
-        moveMotor_msg.linear.z = 0.0;
-        moveMotor_msg.angular.x = 0.0;
-    }
+    // if (((millis() - prev_cmd_time) >= 200))
+    // {
+    //     moveMotor_msg.linear.x = 0.0;
+    //     moveMotor_msg.linear.y = 0.0;
+    //     moveMotor_msg.linear.z = 0.0;
+    //     moveMotor_msg.angular.x = 0.0;
+    // }
     float motor1Speed = moveMotor_msg.linear.x;
     float motor2Speed = moveMotor_msg.linear.y;
     float motor3Speed = moveMotor_msg.linear.z;
