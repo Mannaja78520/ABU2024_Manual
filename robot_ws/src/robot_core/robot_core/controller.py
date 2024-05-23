@@ -44,7 +44,7 @@ class Controller:
         self.LastTime  = self.CurrentTime
         self.Error = error
         self.Integral += self.Error * self.Dt
-        self.Integral = clip(self.Integral, -1, 1)
+        self.Integral = 0 if self.Error == 0 else clip(self.Integral, -1, 1)
         Derivative = (self.Error - self.LastError) / self.Dt
         self.LastError = self.Error
         return (self.Error * self.kp) + (self.Integral * self.ki) + (Derivative * self.kd) + (self.Setpoint * self.kf) + (self.baseSpeed * sig_num(self.Error))
