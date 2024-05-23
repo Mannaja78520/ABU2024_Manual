@@ -20,21 +20,21 @@ ROBOT ORIENTATION
 #define MOTOR3_BREAK true
 #define MOTOR4_BREAK true
 
-#define MOTOR1_PWM 23
-#define MOTOR1_IN_A 22
-#define MOTOR1_IN_B 21
+#define MOTOR1_PWM 32
+#define MOTOR1_IN_A 33
+#define MOTOR1_IN_B 25
 
-#define MOTOR2_PWM 19
-#define MOTOR2_IN_A 18
-#define MOTOR2_IN_B 5
+#define MOTOR2_PWM 26
+#define MOTOR2_IN_A 27
+#define MOTOR2_IN_B 14
 
-#define MOTOR3_PWM 17
-#define MOTOR3_IN_A 16
-#define MOTOR3_IN_B 4
+#define MOTOR3_PWM 23
+#define MOTOR3_IN_A 22
+#define MOTOR3_IN_B 21
 
-#define MOTOR4_PWM 33
-#define MOTOR4_IN_A 25
-#define MOTOR4_IN_B 26
+#define MOTOR4_PWM 19
+#define MOTOR4_IN_A 18
+#define MOTOR4_IN_B 5
 
 /*
 ROBOT ORIENTATION
@@ -46,5 +46,5 @@ ROBOT ORIENTATION
 #define spinBall_INV false
 #define spinBall_BREAK false
 
-#define spinBall_PWM 0
+#define spinBall_PWM 17
 #endif

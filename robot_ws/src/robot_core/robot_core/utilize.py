@@ -8,14 +8,14 @@ def WrapRads(rads):
         return rads - (2 * math.pi)
     if rads < -math.pi:
         return rads + (2 * math.pi)
-    return rads
+    return WrapRads(rads)
 
 def WrapDegs(degs):
     if degs >  180 :
         return degs - 360
     if degs < -180:
         return degs + 360
-    return degs
+    return WrapDegs(degs)
 
 def NormalizeRads(rads):
     rads = rads % (2 * math.pi)

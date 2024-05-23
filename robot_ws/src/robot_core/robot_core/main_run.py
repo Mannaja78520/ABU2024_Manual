@@ -44,6 +44,7 @@ lgpio.gpio_write(h, grip_up, 1)
 maxSpeed = 1023.0
 NormalSpeed = 1.0
 turnSpeed = 0.5
+SpinBallSpeed = 1023.0
 
 # define servo
 kit = ServoKit(channels=8)
@@ -56,34 +57,28 @@ BallLeftGrip = kit.servo[5]
 BallRightGrip = kit.servo[6]
 
 # setup servo
-Grip1.angle = 0
-Grip2.angle = 0
-Grip3.angle = 0
-Grip4.angle = 0
-BallUP_DOWN.angle   = 180
-BallLeftGrip.angle  = 180
-BallRightGrip.angle = 0
+def setupServo():
+    Grip1.angle = 0
+    Grip2.angle = 0
+    Grip3.angle = 0
+    Grip4.angle = 0
+    BallUP_DOWN.angle   = 180
+    BallLeftGrip.angle  = 180
+    BallRightGrip.angle = 0
 
 class mainRun(Node):
-    def __init__(self):
-        super().__init__("Robot_mainRun_Control_Node")
-
-        # TransForm variable
+    
+    def Reset(self):
+        # TransForm variables
         self.Y_Pressed = False
         self.ISGripUP = False
         self.B_Pressed = False
         self.ISGripSlide = False
         
-        # Config imu
-        mpu.configure()
-        mpu.calibrate()
-        mpu.configure()
-        mpu.gbias
-        
         # Time
         self.CurrentTime = time.time()
         
-        # variable
+        # Macro variables
         self.yaw = 0
         self.LastTime = 0
         self.setpoint = 0
@@ -91,12 +86,13 @@ class mainRun(Node):
         self.UseIMU = False
         self.M_Pressed = False
 
+        # Joystick variables
         self.lx = self.ly = self.rx = self.ry = 0
         self.right_trigger = self.left_trigger = 0
 
-        self.A = self.B = self.X = self.Y = self.left_bumper = 0
-        self.right_bumper = self.screen = self.menu = self.logo = 0
-        self.left_stick_button = self.right_stick_button = self.upload = 0
+        self.A = self.B = self.X = self.Y = self.left_bumper = False
+        self.right_bumper = self.screen = self.menu = self.logo = False
+        self.left_stick_button = self.right_stick_button = self.upload = False
 
         self.dpad_right = self.dpad_left = self.dpad_up = self.dpad_down = False
         
@@ -104,12 +100,13 @@ class mainRun(Node):
         self.last_lx = self.last_ly = self.last_rx = self.last_ry = 0
         self.last_rt = self.last_lt = 0
 
-        self.last_A = self.last_B = self.last_X = self.last_Y = self.last_lb = 0
-        self.last_rb = self.last_s = self.last_m = self.last_f = self.last_lsb = 0
-        self.last_rsb = self.last_u = 0
+        self.last_A = self.last_B = self.last_X = self.last_Y = self.last_lb = False
+        self.last_rb = self.last_s = self.last_m = self.last_f = self.last_lsb = False
+        self.last_rsb = self.last_u = False
 
         self.last_dr = self.last_dl = self.last_du = self.last_dd = False
         
+        # variables
         self.K_Pressed = self.IS_13_Keep = self.IS_24_Keep = False
         self.A_Pressed = self.GotBall = self.ChargeBall = self.ISBallSpin = False
         self.X_Pressed = False
@@ -118,7 +115,23 @@ class mainRun(Node):
         self.last_data_time = self.last_time = time.time()
         self.MacroTime = 0
         
-        self.SpinBallSpeed = 1023.0
+        # Control Reset
+        control.ResetVariable()
+        
+        # Config imu
+        mpu.configure()
+        mpu.calibrate()
+        mpu.configure()
+        mpu.gbias
+        
+    def __init__(self):
+        super().__init__("Robot_mainRun_Control_Node")
+
+        # Emergency variables
+        self.EmergencyStop = True
+        
+        self.Reset()
+        setupServo()
         
         self.debug = self.create_subscription(
             Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
@@ -317,7 +330,18 @@ class mainRun(Node):
             return
         have_data_from_controller = False
         
-    # def start:
+        
+    def Emergency_StartStop(self):
+        if(self.right_stick_button and self.right_stick_button):
+            self.Reset()
+            self.EmergencyStop = True
+            return
+        
+        if (self.logo and self.EmergencyStop):
+            self.Reset()
+            setupServo()
+            self.EmergencyStop = False
+            return
     
     def imu(self):
         self.CurrentTime = time.time()
@@ -510,6 +534,13 @@ class mainRun(Node):
     
     def AdjustArm(self):
         # z = 0.0
+        x = self.X
+        if (not x) :
+            self.X_Pressed = False
+            return 
+        if (self.X_Pressed) :
+            return 
+        self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
             BallUP_DOWN.angle = 180
@@ -523,15 +554,11 @@ class mainRun(Node):
             self.ChargeBall = False
             self.ISBallSpin = False
             return  
-        x = self.X
-        if (not x) :
-            self.X_Pressed = False
-            return 
-        if (self.X_Pressed) :
-            return 
-        self.X_Pressed = True
         if (not self.ArmUp and not self.ChargeBall):
             # z = 1.0
+            BallLeftGrip.angle = 130
+            BallRightGrip.angle = 50
+            time.sleep(0.2)
             BallUP_DOWN.angle = 175
             self.ArmUp = True
             return 
@@ -539,6 +566,7 @@ class mainRun(Node):
         if(self.ArmUp and not self.ChargeBall):
             # z = 2.0
             BallUP_DOWN.angle = 70
+            time.sleep(0.2)
             BallLeftGrip.angle = 180
             BallRightGrip.angle = 0
             self.ArmUp = self.GotBall = self.ChargeBall = False
@@ -546,24 +574,28 @@ class mainRun(Node):
         
     def sent_to_microros(self):  # publisher drive topic
         movement_msg = Twist()
+        self.Emergency_StartStop()
+        if not self.EnergyStop:
+            self.imu()
+            self.reset_variable()
+            self.receive_data(self.ser)
+            
+            self.Slide_Transform()
+            self.UpDown_Transform()
+            self.keepHarvest()
+            if not(self.ISGripSlide or self.ISGrip):
+                self.keepBall()
+            self.AdjustArm()
+            
+            if self.UseIMU:
+                movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
+            if not self.UseIMU:
+                movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot_IMU()
+            
+            print(self.ISBallSpin)
+            movement_msg.angular.y = float(self.ISBallSpin)
+            movement_msg.angular.z = SpinBallSpeed
         
-        self.imu()
-        self.reset_variable()
-        self.receive_data(self.ser)
-        
-        self.Slide_Transform()
-        self.UpDown_Transform()
-        self.keepHarvest()
-        self.keepBall()
-        
-        if self.UseIMU:
-            movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
-        if not self.UseIMU:
-            movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot_IMU()
-        
-        print(self.ISBallSpin)
-        movement_msg.angular.y = float(self.ISBallSpin)
-        movement_msg.angular.z = self.SpinBallSpeed
         self.sent_drive.publish(movement_msg)
 
 def main():
