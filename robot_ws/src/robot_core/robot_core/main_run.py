@@ -111,7 +111,7 @@ class mainRun(Node):
         self.last_dr = self.last_dl = self.last_du = self.last_dd = False
         
         self.K_Pressed = self.IS_13_Keep = self.IS_24_Keep = False
-        self.A_Pressed = self.GotBall = self.ChargeBall = False
+        self.A_Pressed = self.GotBall = self.ChargeBall = self.ISBallSpin = False
         self.X_Pressed = False
         self.ArmUp = True
         
@@ -134,7 +134,7 @@ class mainRun(Node):
         self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
         
-        self.ser = self.initialize_serial('/dev/ttyUSB0', 230400)
+        self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
 
     def reset_variable(self):
         self.lx = 0
@@ -165,7 +165,7 @@ class mainRun(Node):
     def initialize_serial(self, port, baud_rate):
         try:
             ser = serial.Serial(port, baud_rate)
-            time.sleep(2)
+            # time.sleep(2)
             return ser
         except serial.SerialException:
             return None
@@ -503,13 +503,6 @@ class mainRun(Node):
     
     def AdjustArm(self):
         # z = 0.0
-        x = self.X
-        if (not x) :
-            self.X_Pressed = False
-            return 
-        if (self.X_Pressed) :
-            return 
-        self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
             BallUP_DOWN.angle = 180
@@ -518,8 +511,18 @@ class mainRun(Node):
             time.sleep(0.5)
             BallLeftGrip.angle = 180
             BallRightGrip.angle = 0
-            self.ChargeBall = self.ArmUp = self.GotBall = self.ISBallSpin = False
+            self.ArmUp = False
+            self.GotBall = False
+            self.ChargeBall = False
+            self.ISBallSpin = False
+            return  
+        x = self.X
+        if (not x) :
+            self.X_Pressed = False
             return 
+        if (self.X_Pressed) :
+            return 
+        self.X_Pressed = True
         if (not self.ArmUp and not self.ChargeBall):
             # z = 1.0
             BallUP_DOWN.angle = 175
@@ -551,6 +554,7 @@ class mainRun(Node):
         if not self.UseIMU:
             movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot_IMU()
         
+        print(self.ISBallSpin)
         movement_msg.angular.y = float(self.ISBallSpin)
         movement_msg.angular.z = self.SpinBallSpeed
         self.sent_drive.publish(movement_msg)
