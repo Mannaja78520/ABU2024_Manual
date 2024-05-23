@@ -6,6 +6,8 @@ import pygame
 import serial
 import time
 
+import sys
+sys.path.append('../robot_ws/src/robot_core/robot_core')
 from controller import Controller
 from utilize import *
 
@@ -132,7 +134,7 @@ class mainRun(Node):
         self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
         
-        self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
+        self.ser = self.initialize_serial('/dev/ttyUSB0', 230400)
 
     def reset_variable(self):
         self.lx = 0

@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
         'runRobot = robot_core.main_run:main',
+        ''
         ],
     },
 )

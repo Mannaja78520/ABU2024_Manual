@@ -30,7 +30,7 @@ def NormalizeDegs(degs):
     return degs
 
 def sig_num(number):
-    return bytes(0 if number == 0 else (-1 if number < 0 else 1))
+    return 0 if number == 0 else (-1 if number < 0 else 1)
 
 def clip(value, min_val, max_val):
     return max(min(value, max_val), min_val)
