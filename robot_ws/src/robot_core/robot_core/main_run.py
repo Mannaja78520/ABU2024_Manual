@@ -7,7 +7,7 @@ import serial
 import time
 
 import sys
-sys.path.append('../robot_ws/src/robot_core/robot_core')
+sys.path.append('../ABU2024_Manual/robot_ws/src/robot_core/robot_core')
 from controller import Controller
 from utilize import *
 
