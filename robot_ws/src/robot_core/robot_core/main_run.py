@@ -227,89 +227,89 @@ class mainRun(Node):
         expected_data_length = 40
         have_data_from_controller = ser.in_waiting
         if have_data_from_controller > 0:
-            # reset_variables()
             self.last_data_time = self.CurrentTime
             received_data = ser.readline().strip().decode()
             if expected_data_length <= len(received_data) <= 80:
-                self.last_time = self.CurrentTime
                 tokens = received_data.split(",")
-                index = 0
-                sum_of_data = 0
-                for token in tokens[:21]:
-                    data = int(token) if token else 0
-                    sum_of_data += abs(data)
-                    if index == 0:
-                        checksum = data
-                        sum_of_data = 0
-                    elif index == 1:
-                        self.lx = data / 100.0
-                    elif index == 2:
-                        self.ly = data / 100.0
-                    elif index == 3:
-                        self.left_trigger = data / 100.0
-                    elif     index == 4:
-                        self.rx = data / 100.0
-                    elif index == 5:
-                        self.ry = data / 100.0
-                    elif index == 6:
-                        self.right_trigger = data / 100.0
-                    elif index == 7:
-                        self.A = data
-                    elif index == 8:
-                        self.B = data
-                    elif index == 9:
-                        self.X = data
-                    elif index == 10:
-                        self.Y = data
-                    elif index == 11:
-                        self.left_bumper = data
-                    elif index == 12:
-                        self.right_bumper = data
-                    elif index == 13:
-                        self.screen = data
-                    elif index == 14:
-                        self.menu = data
-                    elif index == 15:
-                        self.logo = data
-                    elif index == 16:
-                        self.left_stick_button = data
-                    elif index == 17:
-                        self.right_stick_button = data
-                    elif index == 18:
-                        self.upload = data
-                    elif index == 19:
-                        right_left_dpad = data
-                    elif index == 20:
-                        up_down_dpad = data
-                    index += 1
-                # Discard any remaining data in the buffer
-                ser.reset_input_buffer()
-
-                received_checksum = abs(sum_of_data - checksum)
-                if received_checksum == 0:
-                    # Debugging: Print received data
-                    # print("Data Match")
-                    self.dpad_right = right_left_dpad == 1
-                    self.dpad_left = right_left_dpad == -1
-                    self.dpad_up = up_down_dpad == 1
-                    self.dpad_down = up_down_dpad == -1
-                    # compare_data(self.CurrentTime)
-                    self.update_last_data()
-                    return
-                print("Checksum mismatchnot ")
-                ser.readline().decode('utf-8').rstrip()
+                if len(tokens) >= 21:  # Ensure there are enough tokens
+                    try:
+                        index = 0
+                        checksum = int(tokens[0])
+                        for token in tokens[1:]:  # Skip the first token (checksum)
+                            data = int(token) if token else 0
+                            # Assign data based on index
+                            if index == 0:
+                                self.lx = data / 100.0
+                            elif index == 1:
+                                self.ly = data / 100.0
+                            elif index == 2:
+                                self.left_trigger = data / 100.0
+                            elif index == 3:
+                                self.left_trigger = data / 100.0
+                            elif index == 4:
+                                self.rx = data / 100.0
+                            elif index == 5:
+                                self.ry = data / 100.0
+                            elif index == 6:
+                                self.right_trigger = data / 100.0
+                            elif index == 7:
+                                self.A = data
+                            elif index == 8:
+                                self.B = data
+                            elif index == 9:
+                                self.X = data
+                            elif index == 10:
+                                self.Y = data
+                            elif index == 11:
+                                self.left_bumper = data
+                            elif index == 12:
+                                self.right_bumper = data
+                            elif index == 13:
+                                self.screen = data
+                            elif index == 14:
+                                self.menu = data
+                            elif index == 15:
+                                self.logo = data
+                            elif index == 16:
+                                self.left_stick_button = data
+                            elif index == 17:
+                                self.right_stick_button = data
+                            elif index == 18:
+                                self.upload = data
+                            elif index == 19:
+                                right_left_dpad = data
+                            elif index == 20:
+                                up_down_dpad = data
+                            index += 1
+                        # Checksum validation
+                        calculated_checksum = sum(abs(int(token)) for token in tokens[1:])
+                        if calculated_checksum == checksum:
+                            # print("Data Match")
+                            self.dpad_right = right_left_dpad == 1
+                            self.dpad_left = right_left_dpad == -1
+                            self.dpad_up = up_down_dpad == 1
+                            self.dpad_down = up_down_dpad == -1
+                            # compare_data(self.CurrentTime)
+                            self.update_last_data()
+                            self.update_last_data()
+                        else:
+                            print("Checksum mismatch")
+                            self.use_last_data()
+                    except ValueError:
+                        print("Error converting data to integer. Skipping...")
+                        self.use_last_data()
+                else:
+                    print("Incomplete data received")
+                    self.use_last_data()
+            else:
+                print("Incomplete or incorrect data length received")
                 self.use_last_data()
-                return
-            print("Incomplete data received ")
-            ser.readline().decode('utf-8').rstrip()
-            self.use_last_data()
-            return
-        if self.CurrentTime - self.last_data_time < 300:
+        elif self.CurrentTime - self.last_data_time < 0.3:
             have_data_from_controller = True
             self.use_last_data()
-            return
-        have_data_from_controller = False
-        
+        else:
+            have_data_from_controller = False
+
     # def start:
     
     def imu(self):
