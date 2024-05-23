@@ -1,4 +1,3 @@
-import math
 from utilize import *
 import time
 
@@ -10,7 +9,6 @@ class Controller:
     kf = 0
     baseSpeed = 0
     
-    # pid variable
     Setpoint = 0
     Error = 0
     LastError = 0

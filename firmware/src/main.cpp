@@ -110,6 +110,7 @@ struct timespec getTime();
 
 void MovePower(float, float, float, float);
 void Move();
+void Spin_Ball();
 // void HarvestGrip();
 // void KeepBall();
 // void AdjustArm();
@@ -202,6 +203,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     if (timer != NULL)
     {
         Move();
+        Spin_Ball();
         // HarvestGrip();
         // KeepBall();
         // AdjustArm();
