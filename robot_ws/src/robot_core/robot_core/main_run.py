@@ -233,55 +233,60 @@ class mainRun(Node):
             if expected_data_length <= len(received_data) <= 70:
                 self.last_time = self.CurrentTime
                 tokens = received_data.split(",")
-                index = 0
-                sum_of_data = 0
-                for token in tokens[:21]:
-                    data = int(token) if token else 0
-                    sum_of_data += abs(data)
-                    if index == 0:
-                        checksum = data
-                        sum_of_data = 0
-                    elif index == 1:
-                        self.lx = data / 100.0
-                    elif index == 2:
-                        self.ly = data / 100.0
-                    elif index == 3:
-                        self.left_trigger = data / 100.0
-                    elif     index == 4:
-                        self.rx = data / 100.0
-                    elif index == 5:
-                        self.ry = data / 100.0
-                    elif index == 6:
-                        self.right_trigger = data / 100.0
-                    elif index == 7:
-                        self.A = data
-                    elif index == 8:
-                        self.B = data
-                    elif index == 9:
-                        self.X = data
-                    elif index == 10:
-                        self.Y = data
-                    elif index == 11:
-                        self.left_bumper = data
-                    elif index == 12:
-                        self.right_bumper = data
-                    elif index == 13:
-                        self.screen = data
-                    elif index == 14:
-                        self.menu = data
-                    elif index == 15:
-                        self.logo = data
-                    elif index == 16:
-                        self.left_stick_button = data
-                    elif index == 17:
-                        self.right_stick_button = data
-                    elif index == 18:
-                        self.upload = data
-                    elif index == 19:
-                        right_left_dpad = data
-                    elif index == 20:
-                        up_down_dpad = data
-                    index += 1
+                try:
+                    index = 0
+                    sum_of_data = 0
+                    for token in tokens[:21]:
+                        data = int(token) if token else 0
+                        sum_of_data += abs(data)
+                        if index == 0:
+                            checksum = data
+                            sum_of_data = 0
+                        elif index == 1:
+                            self.lx = data / 100.0
+                        elif index == 2:
+                            self.ly = data / 100.0
+                        elif index == 3:
+                            self.left_trigger = data / 100.0
+                        elif     index == 4:
+                            self.rx = data / 100.0
+                        elif index == 5:
+                            self.ry = data / 100.0
+                        elif index == 6:
+                            self.right_trigger = data / 100.0
+                        elif index == 7:
+                            self.A = data
+                        elif index == 8:
+                            self.B = data
+                        elif index == 9:
+                            self.X = data
+                        elif index == 10:
+                            self.Y = data
+                        elif index == 11:
+                            self.left_bumper = data
+                        elif index == 12:
+                            self.right_bumper = data
+                        elif index == 13:
+                            self.screen = data
+                        elif index == 14:
+                            self.menu = data
+                        elif index == 15:
+                            self.logo = data
+                        elif index == 16:
+                            self.left_stick_button = data
+                        elif index == 17:
+                            self.right_stick_button = data
+                        elif index == 18:
+                            self.upload = data
+                        elif index == 19:
+                            right_left_dpad = data
+                        elif index == 20:
+                            up_down_dpad = data
+                        index += 1
+                except ValueError:
+                    print("Error converting data to integer. Skipping...")
+                    self.use_last_data()
+                    
                 # Discard any remaining data in the buffer
                 ser.reset_input_buffer()
 
@@ -304,7 +309,7 @@ class mainRun(Node):
             ser.readline().decode('utf-8').rstrip()
             self.use_last_data()
             return
-        if self.CurrentTime - self.last_data_time < 300:
+        if self.CurrentTime - self.last_data_time < 0.3:
             have_data_from_controller = True
             self.use_last_data()
             return
