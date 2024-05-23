@@ -36,4 +36,15 @@ ROBOT ORIENTATION
 #define MOTOR4_IN_A 25
 #define MOTOR4_IN_B 26
 
+/*
+ROBOT ORIENTATION
+         FRONT
+       SPIN_BALL
+         BACK
+*/
+
+#define spinBall_INV false
+#define spinBall_BREAK false
+
+#define spinBall_PWM 0
 #endif
