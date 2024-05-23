@@ -7,7 +7,7 @@ import serial
 import time
 
 import sys
-sys.path.append('../ABU2024_Manual/robot_ws/src/robot_core/robot_core')
+sys.path.append('../robot_ws/src/robot_core/robot_core')
 from controller import Controller
 from utilize import *
 
@@ -120,9 +120,9 @@ class mainRun(Node):
         
         self.SpinBallSpeed = 1023.0
         
-        self.debug = self.create_subscription(
-            Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
-        )
+        # self.debug = self.create_subscription(
+        #     Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
+        # )
         
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
@@ -135,8 +135,8 @@ class mainRun(Node):
         
         self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
         
-    def debug_callback(self):
-        return
+    # def debug_callback(self):
+    #     return
 
     def reset_variable(self):
         self.lx = 0
