@@ -2,7 +2,7 @@
 #include <micro_ros_platformio.h>
 #include <stdio.h>
 #include <Adafruit_NeoPixel.h>
-#include <ESP32Servo.h>
+// #include <ESP32Servo.h>
 
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
@@ -88,16 +88,16 @@ Motor motor4(PWM_FREQUENCY, PWM_BITS, MOTOR4_INV, MOTOR4_BREAK, MOTOR4_PWM, MOTO
 // BallSpin
 Motor spinBall(PWM_FREQUENCY, PWM_BITS, spinBall_INV, spinBall_BREAK, spinBall_PWM, -1, -1);
 
-// Harvest Servo
-Servo Grip1;
-Servo Grip2;
-Servo Grip3;
-Servo Grip4;
+// // Harvest Servo
+// Servo Grip1;
+// Servo Grip2;
+// Servo Grip3;
+// Servo Grip4;
 
-// Ball Servo
-Servo BallUP_DOWN;
-Servo BallLeftGrip;
-Servo BallRightGrip;
+// // Ball Servo
+// Servo BallUP_DOWN;
+// Servo BallLeftGrip;
+// Servo BallRightGrip;
 
 //------------------------------ < Fuction Prototype > ------------------------------//
 
@@ -110,9 +110,9 @@ struct timespec getTime();
 
 void MovePower(float, float, float, float);
 void Move();
-void HarvestGrip();
-void KeepBall();
-void AdjustArm();
+// void HarvestGrip();
+// void KeepBall();
+// void AdjustArm();
 
 //------------------------------ < Main > -------------------------------------//
 
@@ -122,30 +122,30 @@ void setup()
     Serial.begin(115200);
     set_microros_serial_transports(Serial);
 
-    // Harvest
-    Grip1.attach(SERVO1);
-    Grip2.attach(SERVO2);
-    Grip3.attach(SERVO3);
-    Grip4.attach(SERVO4);
-    Grip1.setPeriodHertz(50);
-    Grip2.setPeriodHertz(50);
-    Grip3.setPeriodHertz(50);
-    Grip4.setPeriodHertz(50);
-    Grip1.write(0);
-    Grip2.write(0);
-    Grip3.write(0);
-    Grip4.write(0);
+    // // Harvest
+    // Grip1.attach(SERVO1);
+    // Grip2.attach(SERVO2);
+    // Grip3.attach(SERVO3);
+    // Grip4.attach(SERVO4);
+    // Grip1.setPeriodHertz(50);
+    // Grip2.setPeriodHertz(50);
+    // Grip3.setPeriodHertz(50);
+    // Grip4.setPeriodHertz(50);
+    // Grip1.write(0);
+    // Grip2.write(0);
+    // Grip3.write(0);
+    // Grip4.write(0);
 
-    // // Ball
-    BallUP_DOWN.attach(SERVO5);
-    BallLeftGrip.attach(SERVO6);
-    BallRightGrip.attach(SERVO7);
-    BallUP_DOWN.setPeriodHertz(50);
-    BallLeftGrip.setPeriodHertz(50);
-    BallRightGrip.setPeriodHertz(50);
-    BallUP_DOWN.write(180);
-    BallLeftGrip.write(180);
-    BallRightGrip.write(0);
+    // // // Ball
+    // BallUP_DOWN.attach(SERVO5);
+    // BallLeftGrip.attach(SERVO6);
+    // BallRightGrip.attach(SERVO7);
+    // BallUP_DOWN.setPeriodHertz(50);
+    // BallLeftGrip.setPeriodHertz(50);
+    // BallRightGrip.setPeriodHertz(50);
+    // BallUP_DOWN.write(180);
+    // BallLeftGrip.write(180);
+    // BallRightGrip.write(0);
 }
 
 void loop()
@@ -170,13 +170,13 @@ void loop()
         }
         break;
     case AGENT_DISCONNECTED:
-        Grip1.write(0);
-        Grip2.write(0);
-        Grip3.write(0);
-        Grip4.write(0);
-        BallUP_DOWN.write(180);
-        BallLeftGrip.write(180);
-        BallRightGrip.write(0);
+        // Grip1.write(0);
+        // Grip2.write(0);
+        // Grip3.write(0);
+        // Grip4.write(0);
+        // BallUP_DOWN.write(180);
+        // BallLeftGrip.write(180);
+        // BallRightGrip.write(0);
         MovePower(0, 0, 0, 0);
         destroyEntities();
         state = WAITING_AGENT;
@@ -202,7 +202,7 @@ void controlCallback(rcl_timer_t *timer, int64_t last_call_time)
     if (timer != NULL)
     {
         Move();
-        HarvestGrip();
+        // HarvestGrip();
         // KeepBall();
         // AdjustArm();
         publishData();
@@ -238,11 +238,11 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         "debug/motor"));
 
-    RCCHECK(rclc_subscription_init_default(
-        &gripper_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "gripper"));
+    // RCCHECK(rclc_subscription_init_default(
+    //     &gripper_subscriber,
+    //     &node,
+    //     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+    //     "gripper"));
     RCCHECK(rclc_subscription_init_default(
         &moveMotor_subscriber,
         &node,
@@ -258,12 +258,12 @@ bool createEntities()
         controlCallback));
     executor = rclc_executor_get_zero_initialized_executor();
     RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
-    RCCHECK(rclc_executor_add_subscription(
-        &executor,
-        &gripper_subscriber,
-        &gripper_msg,
-        &twist2Callback,
-        ON_NEW_DATA));
+    // RCCHECK(rclc_executor_add_subscription(
+    //     &executor,
+    //     &gripper_subscriber,
+    //     &gripper_msg,
+    //     &twist2Callback,
+    //     ON_NEW_DATA));
     RCCHECK(rclc_executor_add_subscription(
         &executor,
         &moveMotor_subscriber,
@@ -284,7 +284,7 @@ bool destroyEntities()
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
     rcl_publisher_fini(&debug_motor_publisher, &node);
-    rcl_subscription_fini(&gripper_subscriber, &node);
+    // rcl_subscription_fini(&gripper_subscriber, &node);
     rcl_subscription_fini(&moveMotor_subscriber, &node);
     rcl_node_fini(&node);
     rcl_timer_fini(&control_timer);
@@ -300,19 +300,19 @@ void publishData()
     debug_motor_msg.linear.y = moveMotor_msg.linear.y;
     debug_motor_msg.linear.z = moveMotor_msg.linear.z;
     debug_motor_msg.angular.x = moveMotor_msg.angular.x;
-    // struct timespec time_stamp = getTime();
+    struct timespec time_stamp = getTime();
     rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
 }
 
 void Move()
 {
-    // if (((millis() - prev_cmd_time) >= 200))
-    // {
-    //     moveMotor_msg.linear.x = 0.0;
-    //     moveMotor_msg.linear.y = 0.0;
-    //     moveMotor_msg.linear.z = 0.0;
-    //     moveMotor_msg.angular.x = 0.0;
-    // }
+    if (((millis() - prev_cmd_time) >= 200))
+    {
+        moveMotor_msg.linear.x = 0.0;
+        moveMotor_msg.linear.y = 0.0;
+        moveMotor_msg.linear.z = 0.0;
+        moveMotor_msg.angular.x = 0.0;
+    }
     float motor1Speed = moveMotor_msg.linear.x;
     float motor2Speed = moveMotor_msg.linear.y;
     float motor3Speed = moveMotor_msg.linear.z;
@@ -321,105 +321,115 @@ void Move()
               motor3Speed, motor4Speed);
 }
 
-void HarvestGrip()
+void Spin_Ball()
 {
-    const int dropDelay = 400;
-    int x = gripper_msg.linear.x;
-    if (x == 1)
+    if (moveMotor_msg.angular.y == 1.0)
     {
-        Grip1.write(112);
-        Grip2.write(112);
-        Grip3.write(112);
-        Grip4.write(112);
-        // delay(300);
+        spinBall.spin(moveMotor_msg.angular.z);
         return;
     }
-    else if (x == 2 || x == 3)
-    {
-        if (x == 2)
-        {
-            Grip1.write(86);
-            Grip3.write(86);
-            // delay(dropDelay);
-        }
-        Grip1.write(0);
-        Grip3.write(0);
-        return;
-    }
-    else if (x == 4 || x == 5)
-    {
-        if (x == 4)
-        {
-            Grip2.write(86);
-            Grip4.write(86);
-            // delay(dropDelay);
-        }
-        Grip2.write(0);
-        Grip4.write(0);
-        return;
-    }
+    spinBall.spin(0);
 }
 
-void KeepBall()
-{
-    int y = gripper_msg.linear.y;
-    if (y == 1)
-    {
-        BallLeftGrip.write(130);
-        BallRightGrip.write(50);
-        return;
-    }
-    else if (y == 2)
-    {
-        spinBall.spin(0);
-        BallUP_DOWN.write(70);
-        // delay(400);
-        BallLeftGrip.write(180);
-        BallRightGrip.write(0);
-        return;
-    }
-    else if (y == 3)
-    {
-        BallUP_DOWN.write(160);
-        return;
-    }
-    else if (y == 4)
-    {
-        BallUP_DOWN.write(115);
-        return;
-    }
-    else if (y == 5)
-    {
-        spinBall.spin(gripper_msg.angular.z);
-        return;
-    }
-}
+// void HarvestGrip()
+// {
+//     const int dropDelay = 400;
+//     int x = gripper_msg.linear.x;
+//     if (x == 1)
+//     {
+//         Grip1.write(112);
+//         Grip2.write(112);
+//         Grip3.write(112);
+//         Grip4.write(112);
+//         // delay(300);
+//         return;
+//     }
+//     else if (x == 2 || x == 3)
+//     {
+//         if (x == 2)
+//         {
+//             Grip1.write(86);
+//             Grip3.write(86);
+//             // delay(dropDelay);
+//         }
+//         Grip1.write(0);
+//         Grip3.write(0);
+//         return;
+//     }
+//     else if (x == 4 || x == 5)
+//     {
+//         if (x == 4)
+//         {
+//             Grip2.write(86);
+//             Grip4.write(86);
+//             // delay(dropDelay);
+//         }
+//         Grip2.write(0);
+//         Grip4.write(0);
+//         return;
+//     }
+// }
 
-void AdjustArm()
-{
-    int z = gripper_msg.linear.z;
-    if (z == 3)
-    {
-        BallUP_DOWN.write(180);
-        // delay(500);
-        spinBall.spin(0);
-        BallUP_DOWN.write(70);
-        // delay(500);
-        BallLeftGrip.write(180);
-        BallRightGrip.write(0);
-        return;
-    }
-    else if (z == 1)
-    {
-        BallUP_DOWN.write(175);
-    }
-    else if (z == 2)
-    {
-        BallUP_DOWN.write(70);
-        BallLeftGrip.write(180);
-        BallRightGrip.write(0);
-    }
-}
+// void KeepBall()
+// {
+//     int y = gripper_msg.linear.y;
+//     if (y == 1)
+//     {
+//         BallLeftGrip.write(130);
+//         BallRightGrip.write(50);
+//         return;
+//     }
+//     else if (y == 2)
+//     {
+//         spinBall.spin(0);
+//         BallUP_DOWN.write(70);
+//         // delay(400);
+//         BallLeftGrip.write(180);
+//         BallRightGrip.write(0);
+//         return;
+//     }
+//     else if (y == 3)
+//     {
+//         BallUP_DOWN.write(160);
+//         return;
+//     }
+//     else if (y == 4)
+//     {
+//         BallUP_DOWN.write(115);
+//         return;
+//     }
+//     else if (y == 5)
+//     {
+//         spinBall.spin(moveMotor_msg.angular.z);
+//         return;
+//     }
+// }
+
+// void AdjustArm()
+// {
+//     int z = gripper_msg.linear.z;
+//     if (z == 3)
+//     {
+//         BallUP_DOWN.write(180);
+//         // delay(500);
+//         spinBall.spin(0);
+//         BallUP_DOWN.write(70);
+//         // delay(500);
+//         BallLeftGrip.write(180);
+//         BallRightGrip.write(0);
+//         return;
+//     }
+//     else if (z == 1)
+//     {
+//         BallUP_DOWN.write(175);
+//     }
+//     else if (z == 2)
+//     {
+//         BallUP_DOWN.write(70);
+//         BallLeftGrip.write(180);
+//         BallRightGrip.write(0);
+//     }
+// }
 
 void syncTime()
 {

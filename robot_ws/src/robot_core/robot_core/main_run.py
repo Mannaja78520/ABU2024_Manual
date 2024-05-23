@@ -6,58 +6,86 @@ import pygame
 import serial
 import time
 
-import lgpio
+from controller import Controller
+from utilize import *
 
+import lgpio
 from mpu9250_jmdev.registers import *
 from mpu9250_jmdev.mpu_9250 import MPU9250
+from adafruit_servokit import ServoKit
 
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from rclpy import qos
 
-# class Calculate():
-    
+control = Controller(1.3, 0.001)
 
-class Zigbee(Node):
-    def __init__(self):
-        super().__init__("Robot_Zigbee_Control_Node")
-
-        self.maxSpeed = 1023.0
-        self.NormalSpeed = 1.0
-        self.turnSpeed = 0.5
-
-        # open gpio chip
-        self.grip_slide = 23
-        self.grip_up    = 24
-        self.h = lgpio.gpiochip_open(0)
-        lgpio.gpio_claim_output(self.h, self.grip_slide)
-        lgpio.gpio_claim_output(self.h, self.grip_up)
-        lgpio.gpio_write(self.h, self.grip_slide, 1)
-        lgpio.gpio_write(self.h, self.grip_up, 1)
-        
-        self.Y_Pressed = False
-        self.ISGripUP = False
-        self.B_Pressed = False
-        self.ISGripSlide = False
-        
-        self.mpu = MPU9250( 
+mpu = MPU9250( 
             address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
             address_mpu_slave=None, 
             bus=1, 
             gfs=GFS_1000, 
             afs=AFS_8G, 
             )
+
+# open gpio chip
+grip_slide = 23
+grip_up    = 24
+
+h = lgpio.gpiochip_open(0)
+lgpio.gpio_claim_output(h, grip_slide)
+lgpio.gpio_claim_output(h, grip_up)
+lgpio.gpio_write(h, grip_slide, 1)
+lgpio.gpio_write(h, grip_up, 1)
+
+maxSpeed = 1023.0
+NormalSpeed = 1.0
+turnSpeed = 0.5
+
+# define servo
+kit = ServoKit(channels=8)
+Grip1 = kit.servo[0]
+Grip2 = kit.servo[1]
+Grip3 = kit.servo[2]
+Grip4 = kit.servo[3]
+BallUP_DOWN = kit.servo[4]
+BallLeftGrip = kit.servo[5]
+BallRightGrip = kit.servo[6]
+
+# setup servo
+Grip1.angle = 0
+Grip2.angle = 0
+Grip3.angle = 0
+Grip4.angle = 0
+BallUP_DOWN.angle   = 180
+BallLeftGrip.angle  = 180
+BallRightGrip.angle = 0
+
+class mainRun(Node):
+    def __init__(self):
+        super().__init__("Robot_mainRun_Control_Node")
+
+        # TransForm variable
+        self.Y_Pressed = False
+        self.ISGripUP = False
+        self.B_Pressed = False
+        self.ISGripSlide = False
         
-        self.mpu.configure()
-        self.mpu.calibrate()
-        self.mpu.configure()
-        self.mpu.gbias
+        # Config imu
+        mpu.configure()
+        mpu.calibrate()
+        mpu.configure()
+        mpu.gbias
         
+        # Time
         self.CurrentTime = time.time()
+        
+        # variable
         self.yaw = 0
         self.LastTime = 0
         self.setpoint = 0
+        self.lastRXTime = 0
         self.UseIMU = False
         self.M_Pressed = False
 
@@ -98,17 +126,14 @@ class Zigbee(Node):
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
         )
-        self.sent_gripper = self.create_publisher(
-            Twist, "gripper", qos_profile=qos.qos_profile_system_default
-        )
-        self.sent_drive_timer = self.create_timer(0.03, self.sent_data)
+        # self.sent_gripper = self.create_publisher(
+        #     Twist, "gripper", qos_profile=qos.qos_profile_system_default
+        # )
+        self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
         
         self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
-        
-    # def debug_callback(self, msg_in):
-    #     self.slope = 0
-        
+
     def reset_variable(self):
         self.lx = 0
         self.ly = 0
@@ -220,7 +245,7 @@ class Zigbee(Node):
                         self.ly = data / 100.0
                     elif index == 3:
                         self.left_trigger = data / 100.0
-                    elif index == 4:
+                    elif     index == 4:
                         self.rx = data / 100.0
                     elif index == 5:
                         self.ry = data / 100.0
@@ -283,23 +308,20 @@ class Zigbee(Node):
             return
         have_data_from_controller = False
         
-    
     # def start:
     
     def imu(self):
         self.CurrentTime = time.time()
         Dt = self.CurrentTime - self.LastTime
         self.LastTime = self.CurrentTime
-        gyro_data = self.mpu.readGyroscopeMaster()
+        gyro_data = mpu.readGyroscopeMaster()
         
-        calibrate_gyrodata = 0 if abs(gyro_data[2]) < 0.5 else gyro_data[2]
+        # gyro_data[2] is gz
+        calibrate_gz = 0 if abs(gyro_data[2]) < 0.5 else gyro_data[2]
         
-        calibrate_gyrodata = math.radians(calibrate_gyrodata)
+        calibrate_gz = math.radians(calibrate_gz) * -1
         
-        self.yaw += calibrate_gyrodata * Dt
-        
-        self.yaw -= math.pi*2 if self.yaw >  math.pi else self.yaw
-        self.yaw += math.pi*2 if self.yaw < -math.pi else self.yaw
+        self.yaw += WrapRads(calibrate_gz * Dt)
         
         if (self.screen):
             self.yaw = 0
@@ -314,58 +336,54 @@ class Zigbee(Node):
         self.M_Pressed = True
         if(not self.UseIMU) :
             self.UseIMU = True
-            # c.reset()
+            control.ResetVariable()
             return
         self.UseIMU = False
             
     def MoveRobot(self):
-        lx =  self.lx * self.NormalSpeed
-        ly =  self.ly * self.NormalSpeed * -1
-        rx =  self.rx * self.turnSpeed
+        lx =  self.lx * NormalSpeed
+        ly =  self.ly * NormalSpeed * -1
+        rx =  self.rx * turnSpeed
 
-        ly =  0.4 if self.dpad_up else ly
-        ly = -0.4 if self.dpad_down else ly
-        lx =  0.4 if self.dpad_right else lx
-        lx = -0.4 if self.dpad_left else lx
+        ly = 0.4 if self.dpad_up    else(-0.4 if self.dpad_down else ly)
+        lx = 0.4 if self.dpad_right else (-0.4 if self.dpad_left else lx)
 
         self.setpoint = self.yaw if rx != 0 else self.setpoint
 
         D = max(abs(lx)+abs(ly)+abs(rx), 1.0)
 
-        motor1Speed = float("{:.1f}".format((ly + lx + rx) / D * self.maxSpeed))
-        motor2Speed = float("{:.1f}".format((ly - lx - rx) / D * self.maxSpeed))
-        motor3Speed = float("{:.1f}".format((ly - lx + rx) / D * self.maxSpeed))
-        motor4Speed = float("{:.1f}".format((ly + lx - rx) / D * self.maxSpeed))
+        motor1Speed = float("{:.1f}".format((ly + lx + rx) / D * maxSpeed))
+        motor2Speed = float("{:.1f}".format((ly - lx - rx) / D * maxSpeed))
+        motor3Speed = float("{:.1f}".format((ly - lx + rx) / D * maxSpeed))
+        motor4Speed = float("{:.1f}".format((ly + lx - rx) / D * maxSpeed))
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
     
     def MoveRobot_IMU(self):
-        lx =  self.lx * self.NormalSpeed
-        ly =  self.ly * self.NormalSpeed * -1
-        rx =  self.rx * self.turnSpeed
+        lx =  self.lx * NormalSpeed
+        ly =  self.ly * NormalSpeed * -1
+        rx =  self.rx * turnSpeed
 
-        ly =  0.4 if self.dpad_up else ly
-        ly = -0.4 if self.dpad_down else ly
-        lx =  0.4 if self.dpad_right else lx
-        lx = -0.4 if self.dpad_left else lx
+        ly = 0.4 if self.dpad_up    else (-0.4 if self.dpad_down else ly)
+        lx = 0.4 if self.dpad_right else (-0.4 if self.dpad_left else lx)
         
-        x2  =  (math.cos(-self.yaw) * lx) - (math.sin(-self.yaw) * ly)
-        y2  =  (math.sin(-self.yaw) * lx) + (math.cos(-self.yaw) * ly)
+        x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
+        y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
         
-        # R = c.Calculate(self.yaw - setpoint)
-        R = rx
-        lastRXTime = self.CurrentTime if rx != 0 else lastRXTime
-        if (rx != 0 or  self.CurrentTime - lastRXTime < 300) :
+        R = control.Calculate(WrapRads(self.setpoint - self.yaw))
+        # R = rx
+        self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
+        if (rx != 0 or  self.CurrentTime - self.lastRXTime < 0.3) :
             R = rx
             self.setpoint = self.yaw
 
-        D = max(abs(lx)+abs(ly)+abs(R), 1.0)
+        D = max(abs(x2)+abs(y2)+abs(R), 1.0)
 
-        motor1Speed = float("{:.1f}".format((ly + lx + R) / D * self.maxSpeed))
-        motor2Speed = float("{:.1f}".format((ly - lx - R) / D * self.maxSpeed))
-        motor3Speed = float("{:.1f}".format((ly - lx + R) / D * self.maxSpeed))
-        motor4Speed = float("{:.1f}".format((ly + lx - R) / D * self.maxSpeed))
+        motor1Speed = float("{:.1f}".format((y2 + x2 + R) / D * maxSpeed))
+        motor2Speed = float("{:.1f}".format((y2 - x2 - R) / D * maxSpeed))
+        motor3Speed = float("{:.1f}".format((y2 - x2 + R) / D * maxSpeed))
+        motor4Speed = float("{:.1f}".format((y2 + x2 - R) / D * maxSpeed))
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
-    
+
     def Slide_Transform(self):
         b = self.B
         if (not b) :
@@ -375,10 +393,10 @@ class Zigbee(Node):
             return
         self.B_Pressed = True
         if(not self.ISGripSlide) :
-            lgpio.gpio_write(self.h, self.grip_slide, 0)
+            lgpio.gpio_write(h, grip_slide, 0)
             self.ISGripSlide = True
             return
-        lgpio.gpio_write(self.h, self.grip_slide, 1)
+        lgpio.gpio_write(h, grip_slide, 1)
         self.ISGripSlide = False
         
     def UpDown_Transform(self):
@@ -390,130 +408,155 @@ class Zigbee(Node):
             return
         self.Y_Pressed = True
         if (not self.ISGripUP) :
-            lgpio.gpio_write(self.h, self.grip_up, 0)
+            lgpio.gpio_write(h, grip_up, 0)
             self.ISGripUP = True
             return
-        lgpio.gpio_write(self.h, self.grip_up, 1)
+        lgpio.gpio_write(h, grip_up, 1)
         self.ISGripUP = False
 
     def keepHarvest(self):
-        x = 0.0
+        # x = 0.0
+        dropDelay = 0.4
         lb = self.left_bumper
         rb = self.right_bumper
         lt = self.left_trigger  > 0.3
         rt = self.right_trigger > 0.3
         if not(lb or rb or rt or lt) :
             self.K_Pressed = False
-            return float(x)
+            return
         if self.K_Pressed:
-            return float(x)
+            return 
         if lb and rb:
-            x = 1.0
+            # x = 1.0
+            Grip1.angle = 112
+            Grip2.angle = 112
+            Grip3.angle = 112
+            Grip4.angle = 112
             self.IS_13_Keep = self.IS_24_Keep = True
-            # time.sleep(0.35)
-            return float(x)
+            time.sleep(0.35)
+            return 
         if self.IS_13_Keep :
             if lb or lt :
                 self.IS_13_Keep = False
                 if lt :
-                    x = 2.0
-                    return float(x)
-                x = 3.0
-                return float(x)
+                    # x = 2.0
+                    Grip1.angle = 86
+                    Grip3.angle = 86
+                    time.sleep(dropDelay)
+                    return 
+                # x = 3.0
+                Grip1.angle = 0
+                Grip3.angle = 0
+                return 
         if self.IS_24_Keep :
             if rb or rt :
                 self.IS_24_Keep = False
                 if rt:
-                    x = 4.0
-                    return float(x)
-                x = 5.0
-                return float(x)
+                    # x = 4.0
+                    Grip2.angle = 86
+                    Grip4.angle = 86
+                    time.sleep(dropDelay)
+                    return 
+                # x = 5.0
+                Grip2.angle = 0
+                Grip4.angle = 0
+                return 
             
     def keepBall(self):
-        y = 0.0
+        # y = 0.0
         MTime = self.CurrentTime - self.MacroTime
         if (MTime > 1 and self.GotBall and not self.ChargeBall) :
-            y = 3.0
-            # BallUP_DOWN.write(155)
+            # y = 3.0
+            BallUP_DOWN.angle = 160
             self.ArmUp = True
             if(MTime > 2.5) :
-                y = 4.0
-                # BallUP_DOWN.write(125)
+                # y = 4.0
+                BallUP_DOWN.angle = 115
                 if(MTime > 3) :
-                    y = 5.0
-                    # r.BallSpin(BallSpinPower)
+                    # y = 5.0
                     self.ISBallSpin = True
                     self.ChargeBall = True
-            return y
+            return
                     
         if (not self.A) :
             self.A_Pressed = False
-            return y
+            return
         if (self.A_Pressed) :
-            return y
+            return
         self.A_Pressed = True
         if(not self.GotBall and not self.ArmUp) :
-            y = 1.0
+            BallLeftGrip.angle  = 130
+            BallRightGrip.angle =  50
             self.MacroTime = self.CurrentTime
             self.GotBall = True
-            return y
-        y = 2.0
-        
+            return 
+        BallUP_DOWN.angle = 70
+        BallLeftGrip.angle = 180
+        BallRightGrip.angle = 0
         self.ArmUp = False
         self.GotBall = False
         self.ChargeBall = False
-        return y
+        self.ISBallSpin = False
+        return 
     
     def AdjustArm(self):
-        z = 0.0
+        # z = 0.0
         x = self.X
         if (not x) :
             self.X_Pressed = False
-            return float(z)
+            return 
         if (self.X_Pressed) :
-            return float(z)
+            return 
         self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
-            z = 3.0
-            self.ChargeBall = self.ArmUp = self.GotBall = False
-            return z
+            # z = 3.0
+            BallUP_DOWN.angle = 180
+            time.sleep(0.5)
+            BallUP_DOWN.angle = 70
+            time.sleep(0.5)
+            BallLeftGrip.angle = 180
+            BallRightGrip.angle = 0
+            self.ChargeBall = self.ArmUp = self.GotBall = self.ISBallSpin = False
+            return 
         if (not self.ArmUp and not self.ChargeBall):
-            z = 1.0
+            # z = 1.0
+            BallUP_DOWN.angle = 175
             self.ArmUp = True
-            return float(z)
+            return 
         
         if(self.ArmUp and not self.ChargeBall):
-            z = 2.0
+            # z = 2.0
+            BallUP_DOWN.angle = 70
+            BallLeftGrip.angle = 180
+            BallRightGrip.angle = 0
             self.ArmUp = self.GotBall = self.ChargeBall = False
-            return float(z)
+            return 
         
-    def sent_data(self):  # publisher drive topic
+    def sent_to_microros(self):  # publisher drive topic
         movement_msg = Twist()
         
-        # self.imu()
+        self.imu()
         self.reset_variable()
         self.receive_data(self.ser)
         
         self.Slide_Transform()
         self.UpDown_Transform()
+        self.keepHarvest()
+        self.keepBall()
         
-        movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
+        if self.UseIMU:
+            movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
+        if not self.UseIMU:
+            movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot_IMU()
+        
+        movement_msg.angular.y = float(self.ISBallSpin)
+        movement_msg.angular.z = self.SpinBallSpeed
         self.sent_drive.publish(movement_msg)
-        
-        gripper_msg = Twist()
-        x = self.keepHarvest()
-        y = self.keepBall()
-        z = self.AdjustArm()
-        gripper_msg.linear.x = float(x) if x else 0.0
-        gripper_msg.linear.y = float(y) if y else 0.0
-        gripper_msg.linear.z = float(z) if z else 0.0
-        gripper_msg.angular.z = self.SpinBallSpeed
-        self.sent_gripper.publish(gripper_msg)
 
 def main():
     rclpy.init()
 
-    sub = Zigbee()    
+    sub = mainRun()   
     rclpy.spin(sub)
     rclpy.shutdown()
 
