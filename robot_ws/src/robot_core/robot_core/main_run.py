@@ -182,7 +182,7 @@ class mainRun(Node):
         if (self.LSB_Pressed) :
             return
         self.LSB_Pressed = True
-        if(not self.UseIMU) :
+        if(not self.IMUHeading) :
             self.IMUHeading = True
             control.ResetVariable()
             return
@@ -324,7 +324,7 @@ class mainRun(Node):
             self.ArmUp = True
             if(MTime > 2.5) :
                 # y = 4.0
-                BallUP_DOWN.angle = 100
+                BallUP_DOWN.angle = 110
                 if(MTime > 3) :
                     # y = 5.0
                     self.ISBallSpin = True
@@ -363,8 +363,8 @@ class mainRun(Node):
         self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
-            BallUP_DOWN.angle = 160
-            time.sleep(0.3)
+            BallUP_DOWN.angle = 175
+            time.sleep(0.5)
             BallUP_DOWN.angle = 5
             time.sleep(0.3)
             BallLeftGrip.angle = 130
@@ -401,6 +401,7 @@ class mainRun(Node):
             print (gamepad.received_data)
         if not self.EmergencyStop:
             self.imu()
+            self.imuHeading()
             self.Slide_Transform()
             self.UpDown_Transform()
             self.keepHarvest()
