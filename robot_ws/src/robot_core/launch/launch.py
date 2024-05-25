@@ -18,7 +18,7 @@ def generate_launch_description():
         output="screen",
         arguments=["serial", "--dev", "/dev/ttyUSB0"],
     )
-    node_joy = Node(package="joy", executable="joy_node")
+    node_joy = Node(package="joy", executable="Robot_mainRun_Control_Node")
     node_joy_drive = Node(
         package="robot_core",
         executable="joy_drive",

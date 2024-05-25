@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
         'runRobot = robot_core.main_run:main',
-        ''
+        'gripper_test = robot_core.main_gripper_test:main'
         ],
     },
 )

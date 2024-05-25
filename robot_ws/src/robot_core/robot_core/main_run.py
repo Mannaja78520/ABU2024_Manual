@@ -44,7 +44,7 @@ turnSpeed = 0.5
 SpinBallSpeed = 1023.0
 
 # define servo
-kit = ServoKit(channels=8)
+kit = ServoKit(channels=7)
 Grip1 = kit.servo[0]
 Grip2 = kit.servo[1]
 Grip3 = kit.servo[2]
@@ -325,7 +325,7 @@ class mainRun(Node):
             self.ArmUp = True
             if(MTime > 2.5) :
                 # y = 4.0
-                BallUP_DOWN.angle = 115
+                BallUP_DOWN.angle = 100
                 if(MTime > 3) :
                     # y = 5.0
                     self.ISBallSpin = True
@@ -339,14 +339,14 @@ class mainRun(Node):
             return
         self.A_Pressed = True
         if(not self.GotBall and not self.ArmUp) :
-            BallLeftGrip.angle  = 130
-            BallRightGrip.angle =  50
+            BallLeftGrip.angle  = 180
+            BallRightGrip.angle =  0
             self.MacroTime = self.CurrentTime
             self.GotBall = True
             return 
-        BallUP_DOWN.angle = 70
-        BallLeftGrip.angle = 180
-        BallRightGrip.angle = 0
+        BallUP_DOWN.angle = 5
+        BallLeftGrip.angle = 130
+        BallRightGrip.angle = 55
         self.ArmUp = False
         self.GotBall = False
         self.ChargeBall = False
@@ -364,12 +364,12 @@ class mainRun(Node):
         self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
-            BallUP_DOWN.angle = 180
-            time.sleep(0.5)
-            BallUP_DOWN.angle = 70
-            time.sleep(0.5)
-            BallLeftGrip.angle = 180
-            BallRightGrip.angle = 0
+            BallUP_DOWN.angle = 160
+            time.sleep(0.3)
+            BallUP_DOWN.angle = 5
+            time.sleep(0.3)
+            BallLeftGrip.angle = 130
+            BallRightGrip.angle = 55
             self.ArmUp = False
             self.GotBall = False
             self.ChargeBall = False
@@ -377,8 +377,8 @@ class mainRun(Node):
             return  
         if (not self.ArmUp and not self.ChargeBall):
             # z = 1.0
-            BallLeftGrip.angle = 130
-            BallRightGrip.angle = 50
+            BallLeftGrip.angle = 180
+            BallRightGrip.angle = 0
             time.sleep(0.2)
             BallUP_DOWN.angle = 175
             self.ArmUp = True
@@ -386,7 +386,7 @@ class mainRun(Node):
         
         if(self.ArmUp and not self.ChargeBall):
             # z = 2.0
-            BallUP_DOWN.angle = 70
+            BallUP_DOWN.angle = 5
             time.sleep(0.2)
             BallLeftGrip.angle = 180
             BallRightGrip.angle = 0
