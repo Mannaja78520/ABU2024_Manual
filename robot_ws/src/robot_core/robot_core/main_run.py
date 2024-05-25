@@ -68,7 +68,7 @@ def setupServo():
 
 class mainRun(Node):
     
-    def Reset(self):
+    def Reset(self, IsResetGyro = False):
         # TransForm variables
         self.Y_Pressed = False
         self.ISGripUP = False
@@ -118,11 +118,12 @@ class mainRun(Node):
         # Control Reset
         control.ResetVariable()
         
-        # Config imu
-        mpu.configure()
-        mpu.calibrate()
-        mpu.configure()
-        mpu.gbias
+        if IsResetGyro == True:
+            # Config imu
+            mpu.configure()
+            mpu.calibrate()
+            mpu.configure()
+            mpu.gbias
         
     def __init__(self):
         super().__init__("Robot_mainRun_Control_Node")
@@ -131,7 +132,7 @@ class mainRun(Node):
         self.EmergencyStop = True
         
         self.received_data = ""
-        self.Reset()
+        self.Reset(True)
         setupServo()
         
         self.debug = self.create_subscription(
@@ -333,13 +334,13 @@ class mainRun(Node):
         
         
     def Emergency_StartStop(self):
-        if(self.right_stick_button and self.right_stick_button):
+        if(self.upload):
             self.Reset()
             self.EmergencyStop = True
             return
         
         if (self.logo and self.EmergencyStop):
-            self.Reset()
+            self.Reset(True)
             setupServo()
             self.EmergencyStop = False
             return
@@ -382,7 +383,7 @@ class mainRun(Node):
         ly = 0.4 if self.dpad_up    else(-0.4 if self.dpad_down else ly)
         lx = 0.4 if self.dpad_right else (-0.4 if self.dpad_left else lx)
 
-        self.setpoint = self.yaw if rx != 0 else self.setpoint
+        self.setpoint = self.yaw
 
         D = max(abs(lx)+abs(ly)+abs(rx), 1.0)
 
@@ -575,26 +576,23 @@ class mainRun(Node):
         
     def sent_to_microros(self):  # publisher drive topic
         movement_msg = Twist()
+        
         self.reset_variable()
         self.receive_data(self.ser)
         self.Emergency_StartStop()
         if self.EmergencyStop :
             print (self.received_data)
-            movement_msg.linear.x = 0.0
-            movement_msg.linear.y = 0.0
-            movement_msg.linear.z = 0.0
-            movement_msg.angular.x = 0.0
-            movement_msg.angular.y = 0.0
-            movement_msg.angular.z = 0.0
+            
         if not self.EmergencyStop:
             self.imu()
             
             self.Slide_Transform()
             self.UpDown_Transform()
             self.keepHarvest()
+            self.AdjustArm()
+            
             if not(self.ISGripSlide or self.ISGripUP):
                 self.keepBall()
-            self.AdjustArm()
             
             if self.UseIMU:
                 movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
