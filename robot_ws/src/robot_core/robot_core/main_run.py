@@ -44,7 +44,7 @@ turnSpeed = 0.5
 SpinBallSpeed = 1023.0
 
 # define servo
-kit = ServoKit(channels=7)
+kit = ServoKit(channels=8)
 Grip1 = kit.servo[0]
 Grip2 = kit.servo[1]
 Grip3 = kit.servo[2]
