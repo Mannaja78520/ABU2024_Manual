@@ -387,8 +387,8 @@ class mainRun(Node):
             # z = 2.0
             BallUP_DOWN.angle = 5
             time.sleep(0.2)
-            BallLeftGrip.angle = 180
-            BallRightGrip.angle = 0
+            BallLeftGrip.angle = 130
+            BallRightGrip.angle = 55
             self.ArmUp = self.GotBall = self.ChargeBall = False
             return 
         
