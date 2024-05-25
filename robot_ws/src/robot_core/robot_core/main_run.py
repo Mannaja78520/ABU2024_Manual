@@ -580,6 +580,12 @@ class mainRun(Node):
         self.Emergency_StartStop()
         if self.EmergencyStop :
             print (self.received_data)
+            movement_msg.linear.x = 0.0
+            movement_msg.linear.y = 0.0
+            movement_msg.linear.z = 0.0
+            movement_msg.angular.x = 0.0
+            movement_msg.angular.y = 0.0
+            movement_msg.angular.z = 0.0
         if not self.EmergencyStop:
             self.imu()
             
