@@ -91,7 +91,6 @@ class mainRun(Node):
         self.X_Pressed = False
         self.ArmUp = True
         
-        self.last_data_time = self.last_time = time.time()
         self.MacroTime = 0
         
         # Control Reset

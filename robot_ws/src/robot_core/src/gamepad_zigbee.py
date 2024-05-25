@@ -1,4 +1,5 @@
 import serial
+import time
 
 class gamepad_Zigbee:
     lx = ly = rx = ry = 0
@@ -17,6 +18,8 @@ class gamepad_Zigbee:
     last_rsb = last_u = False
     
     last_dr = last_dl = last_du = last_dd = False
+    
+    CurrentTime = time.time()
     
     received_data = ''
     
@@ -40,6 +43,9 @@ class gamepad_Zigbee:
         self.last_rsb = self.last_u = False
 
         self.last_dr = self.last_dl = self.last_du = self.last_dd = False
+        self.CurrentTime = time.time()
+        self.last_data_time = time.time()
+        
         
     def __init__(self, port = '/dev/ttyUSB0', baud_rate = 9600):
         self.Reset()
@@ -133,6 +139,7 @@ class gamepad_Zigbee:
         
     def receive_data(self):
         self.reset_variable()
+        self.CurrentTime = time.time()
         expected_data_length = 40
         have_data_from_controller = self.ser.in_waiting
         if have_data_from_controller > 0:
@@ -140,7 +147,6 @@ class gamepad_Zigbee:
             self.last_data_time = self.CurrentTime
             self.received_data = self.ser.readline().strip().decode()
             if expected_data_length <= len(self.received_data) <= 70:
-                self.last_time = self.CurrentTime
                 tokens = self.received_data.split(",")
                 try:
                     index = 0
