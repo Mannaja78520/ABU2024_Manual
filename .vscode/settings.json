@@ -1,6 +1,7 @@
 {
     "python.analysis.extraPaths": [
         "./robot_ws/src/robot_core/robot_core",
-        "./robot_ws/src/robot_core/lib"
+        "./robot_ws/src/robot_core/lib",
+        "./robot_ws/src/robot_core/src"
     ]
 }

@@ -1,15 +1,12 @@
 import rclpy
 import math
 import numpy as np
-
-import pygame
-import serial
 import time
-
 import sys
-sys.path.append('../robot_ws/src/robot_core/lib')
+sys.path.append('../robot_ws/src/robot_core/src')
 from controller import Controller
 from utilize import *
+from gamepad_zigbee import gamepad_Zigbee
 
 import lgpio
 from mpu9250_jmdev.registers import *
@@ -17,12 +14,11 @@ from mpu9250_jmdev.mpu_9250 import MPU9250
 from adafruit_servokit import ServoKit
 
 from rclpy.node import Node
-from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from rclpy import qos
 
+gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
 control = Controller(1.3, 0.001)
-
 mpu = MPU9250( 
             address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
             address_mpu_slave=None, 
@@ -43,6 +39,7 @@ lgpio.gpio_write(h, grip_up, 1)
 
 maxSpeed = 1023.0
 NormalSpeed = 1.0
+SlowSpeed = 0.4
 turnSpeed = 0.5
 SpinBallSpeed = 1023.0
 
@@ -84,28 +81,10 @@ class mainRun(Node):
         self.setpoint = 0
         self.lastRXTime = 0
         self.UseIMU = False
+        self.IMUHeading = True
         self.M_Pressed = False
+        self.LSB_Pressed = False
 
-        # Joystick variables
-        self.lx = self.ly = self.rx = self.ry = 0
-        self.right_trigger = self.left_trigger = 0
-
-        self.A = self.B = self.X = self.Y = self.left_bumper = False
-        self.right_bumper = self.screen = self.menu = self.logo = False
-        self.left_stick_button = self.right_stick_button = self.upload = False
-
-        self.dpad_right = self.dpad_left = self.dpad_up = self.dpad_down = False
-        
-        # Last data variables
-        self.last_lx = self.last_ly = self.last_rx = self.last_ry = 0
-        self.last_rt = self.last_lt = 0
-
-        self.last_A = self.last_B = self.last_X = self.last_Y = self.last_lb = False
-        self.last_rb = self.last_s = self.last_m = self.last_f = self.last_lsb = False
-        self.last_rsb = self.last_u = False
-
-        self.last_dr = self.last_dl = self.last_du = self.last_dd = False
-        
         # variables
         self.K_Pressed = self.IS_13_Keep = self.IS_24_Keep = False
         self.A_Pressed = self.GotBall = self.ChargeBall = self.ISBallSpin = False
@@ -147,199 +126,17 @@ class mainRun(Node):
         # )
         self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
-        
-        self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
-        
+
     def debug_callback(self, msgin):
         return
-
-    def reset_variable(self):
-        self.lx = 0
-        self.ly = 0
-        self.rx = 0
-        self.ry = 0
-        self.right_trigger = 0
-        self.left_trigger = 0
-
-        self.A = 0
-        self.B = 0
-        self.X = 0
-        self.Y = 0
-        self.left_bumper = 0
-        self.right_bumper = 0
-        self.screen = 0
-        self.menu = 0
-        self.logo = 0
-        self.left_stick_button = 0
-        self.right_stick_button = 0
-        self.upload = 0
-
-        self.dpad_right = False
-        self.dpad_left = False
-        self.dpad_up = False
-        self.dpad_down = False
-
-    def initialize_serial(self, port, baud_rate):
-        try:
-            ser = serial.Serial(port, baud_rate)
-            # time.sleep(2)
-            return ser
-        except serial.SerialException:
-            return None
-    
-    def use_last_data(self):
-        self.lx = self.last_lx
-        self.ly = self.last_ly
-        self.rx = self.last_rx
-        self.ry = self.last_ry
-        self.right_trigger = self.last_rt
-        self.left_trigger = self.last_lt
-
-        self.A = self.last_A
-        self.B = self.last_B
-        self.X = self.last_X
-        self.Y = self.last_Y
-        self.left_bumper = self.last_lb
-        self.right_bumper = self.last_rb
-        self.screen = self.last_s
-        self.menu = self.last_m
-        self.logo = self.last_f
-        self.left_stick_button = self.last_lsb
-        self.right_stick_button = self.last_rsb
-        self.upload = self.last_u
-
-        self.dpad_right = self.last_dr
-        self.dpad_left = self.last_dl
-        self.dpad_up = self.last_du
-        self.dpad_down = self.last_dd
-        
-    def update_last_data(self):
-        self.last_lx = self.lx
-        self.last_ly = self.ly
-        self.last_rx = self.rx
-        self.last_ry = self.ry
-        self.last_rt = self.right_trigger
-        self.last_lt = self.left_trigger
-        
-        self.last_A = self.A
-        self.last_B = self.B
-        self.last_X = self.X
-        self.last_Y = self.Y
-        self.last_lb = self.left_bumper
-        self.last_rb = self.right_bumper
-        self.last_s = self.screen
-        self.last_m = self.menu
-        self.last_f = self.logo
-        self.last_lsb = self.left_stick_button
-        self.last_rsb = self.right_stick_button
-        self.last_u = self.upload
-
-        self.last_dr = self.dpad_right
-        self.last_dl = self.dpad_left
-        self.last_du = self.dpad_up
-        self.last_dd = self.dpad_down
-        
-
-    def receive_data(self, ser):
-        expected_data_length = 40
-        have_data_from_controller = ser.in_waiting
-        if have_data_from_controller > 0:
-            # reset_variables()
-            self.last_data_time = self.CurrentTime
-            self.received_data = ser.readline().strip().decode()
-            if expected_data_length <= len(self.received_data) <= 70:
-                self.last_time = self.CurrentTime
-                tokens = self.received_data.split(",")
-                try:
-                    index = 0
-                    sum_of_data = 0
-                    for token in tokens[:21]:
-                        data = int(token) if token else 0
-                        sum_of_data += abs(data)
-                        if index == 0:
-                            checksum = data
-                            sum_of_data = 0
-                        elif index == 1:
-                            self.lx = data / 100.0
-                        elif index == 2:
-                            self.ly = data / 100.0
-                        elif index == 3:
-                            self.left_trigger = data / 100.0
-                        elif     index == 4:
-                            self.rx = data / 100.0
-                        elif index == 5:
-                            self.ry = data / 100.0
-                        elif index == 6:
-                            self.right_trigger = data / 100.0
-                        elif index == 7:
-                            self.A = data
-                        elif index == 8:
-                            self.B = data
-                        elif index == 9:
-                            self.X = data
-                        elif index == 10:
-                            self.Y = data
-                        elif index == 11:
-                            self.left_bumper = data
-                        elif index == 12:
-                            self.right_bumper = data
-                        elif index == 13:
-                            self.screen = data
-                        elif index == 14:
-                            self.menu = data
-                        elif index == 15:
-                            self.logo = data
-                        elif index == 16:
-                            self.left_stick_button = data
-                        elif index == 17:
-                            self.right_stick_button = data
-                        elif index == 18:
-                            self.upload = data
-                        elif index == 19:
-                            right_left_dpad = data
-                        elif index == 20:
-                            up_down_dpad = data
-                        index += 1
-                except ValueError:
-                    print("Error converting data to integer. Skipping...")
-                    self.use_last_data()
-                    
-                # Discard any remaining data in the buffer
-                ser.reset_input_buffer()
-
-                received_checksum = abs(sum_of_data - checksum)
-                if received_checksum == 0:
-                    # Debugging: Print received data
-                    # print("Data Match")
-                    self.dpad_right = right_left_dpad == 1
-                    self.dpad_left = right_left_dpad == -1
-                    self.dpad_up = up_down_dpad == 1
-                    self.dpad_down = up_down_dpad == -1
-                    # compare_data(self.CurrentTime)
-                    self.update_last_data()
-                    return
-                print("Checksum mismatchnot ")
-                ser.readline().decode('utf-8').rstrip()
-                self.use_last_data()
-                return
-            print("Incomplete data received ")
-            ser.readline().decode('utf-8').rstrip()
-            self.use_last_data()
-            return
-        if self.CurrentTime - self.last_data_time < 0.3:
-            have_data_from_controller = True
-            self.use_last_data()
-            return
-        have_data_from_controller = False
-        
         
     def Emergency_StartStop(self):
-        if(self.upload):
+        if(gamepad.upload):
             self.Reset()
             self.EmergencyStop = True
             return
         
-        if (self.logo and self.EmergencyStop):
+        if (gamepad.logo and self.EmergencyStop):
             self.Reset(True)
             setupServo()
             self.EmergencyStop = False
@@ -358,10 +155,12 @@ class mainRun(Node):
         
         self.yaw += WrapRads(calibrate_gz * Dt)
         
-        if (self.screen):
+        if (gamepad.screen):
             self.yaw = 0
-
-        m = self.menu
+            self.setpoint = 0
+            return
+        
+        m = gamepad.menu
         if (not m) :
             self.M_Pressed = False
             return
@@ -374,14 +173,29 @@ class mainRun(Node):
             control.ResetVariable()
             return
         self.UseIMU = False
+        
+    def imuHeading(self): 
+        lsb = gamepad.left_stick_button
+        if (not lsb) :
+            self.LSB_Pressed = False
+            return
+        
+        if (self.LSB_Pressed) :
+            return
+        self.LSB_Pressed = True
+        if(not self.UseIMU) :
+            self.IMUHeading = True
+            control.ResetVariable()
+            return
+        self.IMUHeading = False
             
     def MoveRobot(self):
-        lx =  self.lx * NormalSpeed
-        ly =  self.ly * NormalSpeed * -1
-        rx =  self.rx * turnSpeed
+        lx =  gamepad.lx * NormalSpeed
+        ly =  gamepad.ly * NormalSpeed * -1
+        rx =  gamepad.rx * turnSpeed
 
-        ly = 0.4 if self.dpad_up    else(-0.4 if self.dpad_down else ly)
-        lx = 0.4 if self.dpad_right else (-0.4 if self.dpad_left else lx)
+        ly = SlowSpeed if gamepad.dpad_up    else(-SlowSpeed if gamepad.dpad_down else ly)
+        lx = SlowSpeed if gamepad.dpad_right else (-SlowSpeed if gamepad.dpad_left else lx)
 
         self.setpoint = self.yaw
 
@@ -394,15 +208,19 @@ class mainRun(Node):
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
     
     def MoveRobot_IMU(self):
-        lx =  self.lx * NormalSpeed
-        ly =  self.ly * NormalSpeed * -1
-        rx =  self.rx * turnSpeed
+        lx =  gamepad.lx * NormalSpeed
+        ly =  gamepad.ly * NormalSpeed * -1
+        rx =  gamepad.rx * turnSpeed
 
-        ly = 0.4 if self.dpad_up    else (-0.4 if self.dpad_down else ly)
-        lx = 0.4 if self.dpad_right else (-0.4 if self.dpad_left else lx)
+        ly = SlowSpeed if gamepad.dpad_up    else (-SlowSpeed if gamepad.dpad_down else ly)
+        lx = SlowSpeed if gamepad.dpad_right else (-SlowSpeed if gamepad.dpad_left else lx)
         
-        x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
-        y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
+        if self.IMUHeading :
+            x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
+            y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
+        if not self.IMUHeading :
+            x2  =  lx
+            y2  =  ly
         
         R = control.Calculate(WrapRads(self.setpoint - self.yaw))
         # R = rx
@@ -418,9 +236,9 @@ class mainRun(Node):
         motor3Speed = float("{:.1f}".format((y2 - x2 + R) / D * maxSpeed))
         motor4Speed = float("{:.1f}".format((y2 + x2 - R) / D * maxSpeed))
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
-
+    
     def Slide_Transform(self):
-        b = self.B
+        b = gamepad.B
         if (not b) :
             self.B_Pressed = False
             return
@@ -435,7 +253,7 @@ class mainRun(Node):
         self.ISGripSlide = False
         
     def UpDown_Transform(self):
-        y = self.Y
+        y = gamepad.Y
         if (not y) :
             self.Y_Pressed = False
             return
@@ -452,10 +270,10 @@ class mainRun(Node):
     def keepHarvest(self):
         # x = 0.0
         dropDelay = 0.4
-        lb = self.left_bumper
-        rb = self.right_bumper
-        lt = self.left_trigger  > 0.3
-        rt = self.right_trigger > 0.3
+        lb = gamepad.left_bumper
+        rb = gamepad.right_bumper
+        lt = gamepad.left_trigger  > 0.3
+        rt = gamepad.right_trigger > 0.3
         if not(lb or rb or rt or lt) :
             self.K_Pressed = False
             return
@@ -499,6 +317,7 @@ class mainRun(Node):
             
     def keepBall(self):
         # y = 0.0
+        a = gamepad.A
         MTime = self.CurrentTime - self.MacroTime
         if (MTime > 1 and self.GotBall and not self.ChargeBall) :
             # y = 3.0
@@ -513,7 +332,7 @@ class mainRun(Node):
                     self.ChargeBall = True
             return
                     
-        if (not self.A) :
+        if (not a) :
             self.A_Pressed = False
             return
         if (self.A_Pressed) :
@@ -536,7 +355,7 @@ class mainRun(Node):
     
     def AdjustArm(self):
         # z = 0.0
-        x = self.X
+        x = gamepad.X
         if (not x) :
             self.X_Pressed = False
             return 
@@ -576,23 +395,20 @@ class mainRun(Node):
         
     def sent_to_microros(self):  # publisher drive topic
         movement_msg = Twist()
+        gamepad.receive_data()
         
-        self.reset_variable()
-        self.receive_data(self.ser)
         self.Emergency_StartStop()
         if self.EmergencyStop :
-            print (self.received_data)
-            
+            print (gamepad.received_data)
         if not self.EmergencyStop:
             self.imu()
-            
             self.Slide_Transform()
             self.UpDown_Transform()
             self.keepHarvest()
             self.AdjustArm()
             
             if not(self.ISGripSlide or self.ISGripUP):
-                self.keepBall()
+                self.keepBall()         
             
             if self.UseIMU:
                 movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
