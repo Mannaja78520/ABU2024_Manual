@@ -130,6 +130,7 @@ class mainRun(Node):
         # Emergency variables
         self.EmergencyStop = True
         
+        self.received_data = ""
         self.Reset()
         setupServo()
         
@@ -148,7 +149,7 @@ class mainRun(Node):
         
         self.ser = self.initialize_serial('/dev/ttyUSB1', 230400)
         
-    def debug_callback(self):
+    def debug_callback(self, msgin):
         return
 
     def reset_variable(self):
@@ -244,10 +245,10 @@ class mainRun(Node):
         if have_data_from_controller > 0:
             # reset_variables()
             self.last_data_time = self.CurrentTime
-            received_data = ser.readline().strip().decode()
-            if expected_data_length <= len(received_data) <= 70:
+            self.received_data = ser.readline().strip().decode()
+            if expected_data_length <= len(self.received_data) <= 70:
                 self.last_time = self.CurrentTime
-                tokens = received_data.split(",")
+                tokens = self.received_data.split(",")
                 try:
                     index = 0
                     sum_of_data = 0
@@ -577,6 +578,8 @@ class mainRun(Node):
         self.reset_variable()
         self.receive_data(self.ser)
         self.Emergency_StartStop()
+        if self.EmergencyStop :
+            print (self.received_data)
         if not self.EmergencyStop:
             self.imu()
             

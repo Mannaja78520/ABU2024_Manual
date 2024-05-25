@@ -36,6 +36,14 @@ ROBOT ORIENTATION
 #define MOTOR4_IN_A 18
 #define MOTOR4_IN_B 5
 
+// #define MOTOR3_PWM 19
+// #define MOTOR3_IN_A 18
+// #define MOTOR3_IN_B 5
+
+// #define MOTOR4_PWM 23
+// #define MOTOR4_IN_A 22
+// #define MOTOR4_IN_B 21
+
 /*
 ROBOT ORIENTATION
          FRONT
