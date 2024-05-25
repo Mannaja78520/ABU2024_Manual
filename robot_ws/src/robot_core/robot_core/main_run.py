@@ -414,7 +414,7 @@ class mainRun(Node):
             if not self.UseIMU:
                 movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot_IMU()
             
-            print(self.ISBallSpin)
+            # print(self.ISBallSpin)
             movement_msg.angular.y = float(self.ISBallSpin)
             movement_msg.angular.z = SpinBallSpeed
         

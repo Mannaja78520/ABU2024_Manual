@@ -22,6 +22,8 @@ class gamepad_Zigbee:
     CurrentTime = time.time()
     
     received_data = ''
+    port = ''
+    baud_rate = 9600
     
     def Reset(self):
         # Joystick variables
@@ -50,6 +52,8 @@ class gamepad_Zigbee:
     def __init__(self, port = '/dev/ttyUSB0', baud_rate = 9600):
         self.Reset()
         self.ser = self.initialize_serial(port, baud_rate)
+        self.port = port
+        self.baud_rate = baud_rate
         
     def initialize_serial(self, port, baud_rate):
         try:
@@ -141,6 +145,13 @@ class gamepad_Zigbee:
         self.reset_variable()
         self.CurrentTime = time.time()
         expected_data_length = 40
+        checksum = -1
+        if self.ser is None:
+            print("Serial is not initialized. Attempting to initialize...")
+            self.ser = self.initialize_serial(self.port, self.baud_rate)
+            if self.ser is None:
+                print("Failed to initialize serial. Cannot receive data.")
+                return
         have_data_from_controller = self.ser.in_waiting
         if have_data_from_controller > 0:
             # reset_variables()
