@@ -81,4 +81,7 @@ def main(stdscr):
             stdscr.addstr(7, 0, "Ball_Right  Angle: {}".format(BallRightGripAngle))
             stdscr.refresh()
 
-curses.wrapper(main)
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+    

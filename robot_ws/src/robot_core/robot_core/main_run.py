@@ -18,7 +18,7 @@ from geometry_msgs.msg import Twist
 from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
-control = Controller(1.3, 0.001)
+control = Controller(0.84, 0.01)
 mpu = MPU9250( 
             address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
             address_mpu_slave=None, 
