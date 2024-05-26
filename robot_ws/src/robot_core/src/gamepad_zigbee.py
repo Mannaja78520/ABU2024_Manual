@@ -247,7 +247,7 @@ class gamepad_Zigbee:
             print("Serial communication error: " + str(e))
             # Retry logic
             self.ser.close()
-            time.sleep(1)  # Wait for 1 second before retrying
+            time.sleep(0.1)  # Wait for 1 second before retrying
             self.ser = self.initialize_serial(self.port, self.baud_rate)
             if self.ser is None:
                 print("Failed to initialize serial. Cannot retry.")
