@@ -90,6 +90,7 @@ class gamepad_Zigbee:
         self.dpad_left = False
         self.dpad_up = False
         self.dpad_down = False
+        self.received_data = ''
         
     def use_last_data(self):
         self.lx = self.last_lx
