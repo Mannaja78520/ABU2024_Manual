@@ -157,7 +157,6 @@ class gamepad_Zigbee:
                     return
             self.have_data_from_controller = self.ser.in_waiting
             if self.have_data_from_controller > 0:
-                # reset_variables()
                 self.last_data_time = self.CurrentTime
                 received_bytes = self.ser.readline().strip()
                 try:
@@ -252,6 +251,7 @@ class gamepad_Zigbee:
         except OSError as e:
             print("Serial communication error: " + str(e))
             # Retry logic
+            self.reset_variable()
             self.have_data_from_controller = False
             self.ser.close()
             time.sleep(1)  # Wait for 1 second before retrying
