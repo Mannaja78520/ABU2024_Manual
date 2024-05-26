@@ -259,3 +259,23 @@ class gamepad_Zigbee:
                 print("Failed to initialize serial. Cannot retry.")
                 return
             self.receive_data()  # Retry communication
+            
+    def retry_serial_communication(self):
+        # MAX_RETRIES = 3
+        retries = 0
+        while True:
+            print(f"Retrying communication... Retry {retries + 1}")
+            self.ser.close()
+            time.sleep(0.1)  # Wait for 0.1 second before retrying
+            self.ser = self.initialize_serial(self.port, self.baud_rate)
+            if self.ser is None:
+                print("Failed to initialize serial. Cannot retry.")
+                return
+            try:
+                self.receive_data()  # Retry communication
+                return
+            except serial.SerialException as e:
+                print("Retry failed:", e)
+                retries += 1
+
+        # print("Maximum retries exceeded. Cannot establish communication.")
