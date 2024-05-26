@@ -18,7 +18,7 @@ from geometry_msgs.msg import Twist
 from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
-control = Controller(0.84, 0.01)
+control = Controller(1.3, 0.01)
 mpu = MPU9250( 
             address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
             address_mpu_slave=None, 
@@ -49,9 +49,12 @@ Grip1 = kit.servo[0]
 Grip2 = kit.servo[1]
 Grip3 = kit.servo[2]
 Grip4 = kit.servo[3]
-BallUP_DOWN = kit.servo[4]
-BallLeftGrip = kit.servo[5]
-BallRightGrip = kit.servo[6]
+BallUP_DOWN = kit.servo[-1]
+BallLeftGrip = kit.servo[-1]
+BallRightGrip = kit.servo[-1]
+# BallUP_DOWN = kit.servo[4]
+# BallLeftGrip = kit.servo[5]
+# BallRightGrip = kit.servo[6]
 
 # setup servo
 def setupServo():
@@ -343,7 +346,7 @@ class mainRun(Node):
             self.MacroTime = self.CurrentTime
             self.GotBall = True
             return 
-        BallUP_DOWN.angle = 5
+        BallUP_DOWN.angle = 15
         BallLeftGrip.angle = 130
         BallRightGrip.angle = 55
         self.ArmUp = False
@@ -365,7 +368,7 @@ class mainRun(Node):
             # z = 3.0
             BallUP_DOWN.angle = 175
             time.sleep(0.5)
-            BallUP_DOWN.angle = 5
+            BallUP_DOWN.angle = 15
             time.sleep(0.3)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
@@ -385,7 +388,7 @@ class mainRun(Node):
         
         if(self.ArmUp and not self.ChargeBall):
             # z = 2.0
-            BallUP_DOWN.angle = 5
+            BallUP_DOWN.angle = 15
             time.sleep(0.2)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
