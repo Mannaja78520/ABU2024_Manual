@@ -21,6 +21,8 @@ class gamepad_Zigbee:
     
     CurrentTime = time.time()
     
+    have_data_from_controller = False
+    
     received_data = ''
     port = ''
     baud_rate = 9600
@@ -146,98 +148,109 @@ class gamepad_Zigbee:
         self.CurrentTime = time.time()
         expected_data_length = 40
         checksum = -1
-        if self.ser is None:
-            print("Serial is not initialized. Attempting to initialize...")
-            self.ser = self.initialize_serial(self.port, self.baud_rate)
+        try:
             if self.ser is None:
-                print("Failed to initialize serial. Cannot receive data.")
-                return
-        have_data_from_controller = self.ser.in_waiting
-        if have_data_from_controller > 0:
-            # reset_variables()
-            self.last_data_time = self.CurrentTime
-            self.received_data = self.ser.readline().strip().decode()
-            if expected_data_length <= len(self.received_data) <= 70:
-                tokens = self.received_data.split(",")
-                try:
-                    index = 0
-                    sum_of_data = 0
-                    for token in tokens[:21]:
-                        data = int(token) if token else 0
-                        sum_of_data += abs(data)
-                        if index == 0:
-                            checksum = data
-                            sum_of_data = 0
-                        elif index == 1:
-                            self.lx = data / 100.0
-                        elif index == 2:
-                            self.ly = data / 100.0
-                        elif index == 3:
-                            self.left_trigger = data / 100.0
-                        elif     index == 4:
-                            self.rx = data / 100.0
-                        elif index == 5:
-                            self.ry = data / 100.0
-                        elif index == 6:
-                            self.right_trigger = data / 100.0
-                        elif index == 7:
-                            self.A = data
-                        elif index == 8:
-                            self.B = data
-                        elif index == 9:
-                            self.X = data
-                        elif index == 10:
-                            self.Y = data
-                        elif index == 11:
-                            self.left_bumper = data
-                        elif index == 12:
-                            self.right_bumper = data
-                        elif index == 13:
-                            self.screen = data
-                        elif index == 14:
-                            self.menu = data
-                        elif index == 15:
-                            self.logo = data
-                        elif index == 16:
-                            self.left_stick_button = data
-                        elif index == 17:
-                            self.right_stick_button = data
-                        elif index == 18:
-                            self.upload = data
-                        elif index == 19:
-                            right_left_dpad = data
-                        elif index == 20:
-                            up_down_dpad = data
-                        index += 1
-                except ValueError:
-                    print("Error converting data to integer. Skipping...")
-                    self.use_last_data()
-                    
-                # Discard any remaining data in the buffer
-                self.ser.reset_input_buffer()
-
-                received_checksum = abs(sum_of_data - checksum)
-                if received_checksum == 0:
-                    # Debugging: Print received data
-                    # print("Data Match")
-                    self.dpad_right = right_left_dpad == 1
-                    self.dpad_left = right_left_dpad == -1
-                    self.dpad_up = up_down_dpad == 1
-                    self.dpad_down = up_down_dpad == -1
-                    # compare_data(self.CurrentTime)
-                    self.update_last_data()
+                print("Serial is not initialized. Attempting to initialize...")
+                self.ser = self.initialize_serial(self.port, self.baud_rate)
+                if self.ser is None:
+                    print("Failed to initialize serial. Cannot receive data.")
                     return
-                print("Checksum mismatchnot ")
+            self.have_data_from_controller = self.ser.in_waiting
+            if self.have_data_from_controller > 0:
+                # reset_variables()
+                self.last_data_time = self.CurrentTime
+                self.received_data = self.ser.readline().strip().decode()
+                if expected_data_length <= len(self.received_data) <= 70:
+                    tokens = self.received_data.split(",")
+                    try:
+                        index = 0
+                        sum_of_data = 0
+                        for token in tokens[:21]:
+                            data = int(token) if token else 0
+                            sum_of_data += abs(data)
+                            if index == 0:
+                                checksum = data
+                                sum_of_data = 0
+                            elif index == 1:
+                                self.lx = data / 100.0
+                            elif index == 2:
+                                self.ly = data / 100.0
+                            elif index == 3:
+                                self.left_trigger = data / 100.0
+                            elif     index == 4:
+                                self.rx = data / 100.0
+                            elif index == 5:
+                                self.ry = data / 100.0
+                            elif index == 6:
+                                self.right_trigger = data / 100.0
+                            elif index == 7:
+                                self.A = data
+                            elif index == 8:
+                                self.B = data
+                            elif index == 9:
+                                self.X = data
+                            elif index == 10:
+                                self.Y = data
+                            elif index == 11:
+                                self.left_bumper = data
+                            elif index == 12:
+                                self.right_bumper = data
+                            elif index == 13:
+                                self.screen = data
+                            elif index == 14:
+                                self.menu = data
+                            elif index == 15:
+                                self.logo = data
+                            elif index == 16:
+                                self.left_stick_button = data
+                            elif index == 17:
+                                self.right_stick_button = data
+                            elif index == 18:
+                                self.upload = data
+                            elif index == 19:
+                                right_left_dpad = data
+                            elif index == 20:
+                                up_down_dpad = data
+                            index += 1
+                    except ValueError:
+                        print("Error converting data to integer. Skipping...")
+                        self.use_last_data()
+                        
+                    # Discard any remaining data in the buffer
+                    self.ser.reset_input_buffer()
+
+                    received_checksum = abs(sum_of_data - checksum)
+                    if received_checksum == 0:
+                        # Debugging: Print received data
+                        # print("Data Match")
+                        self.dpad_right = right_left_dpad == 1
+                        self.dpad_left = right_left_dpad == -1
+                        self.dpad_up = up_down_dpad == 1
+                        self.dpad_down = up_down_dpad == -1
+                        # compare_data(self.CurrentTime)
+                        self.update_last_data()
+                        return
+                    print("Checksum mismatchnot ")
+                    self.ser.readline().decode('utf-8').rstrip()
+                    self.use_last_data()
+                    return
+                print("Incomplete data received ")
                 self.ser.readline().decode('utf-8').rstrip()
                 self.use_last_data()
                 return
-            print("Incomplete data received ")
-            self.ser.readline().decode('utf-8').rstrip()
-            self.use_last_data()
-            return
-        if self.CurrentTime - self.last_data_time < 0.3:
-            have_data_from_controller = True
-            self.use_last_data()
-            return
-        have_data_from_controller = False
+            if self.CurrentTime - self.last_data_time < 0.3:
+                self.have_data_from_controller = True
+                self.use_last_data()
+                return
+            self.have_data_from_controller = False
+        except serial.SerialException as e:
+            print("Serial communication error: " + str(e))
+            # Retry logic
+            self.ser.close()
+            time.sleep(1)  # Wait for 1 second before retrying
+            self.ser = self.initialize_serial(self.port, self.baud_rate)
+            if self.ser is None:
+                print("Failed to initialize serial. Cannot retry.")
+                return
+            self.receive_data()  # Retry communication
         
