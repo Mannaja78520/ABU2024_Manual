@@ -249,5 +249,5 @@ class gamepad_Zigbee:
                 self.use_last_data()
                 return
             self.have_data_from_controller = False
-        except serial.SerialException as e:
+        except OSError as e:
             print("Serial communication error: " + str(e))
