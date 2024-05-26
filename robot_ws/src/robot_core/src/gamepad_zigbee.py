@@ -90,7 +90,7 @@ class gamepad_Zigbee:
         self.dpad_left = False
         self.dpad_up = False
         self.dpad_down = False
-        self.received_data = ''
+        # self.received_data = ''
         
     def use_last_data(self):
         self.lx = self.last_lx
@@ -253,6 +253,7 @@ class gamepad_Zigbee:
             print("Serial communication error: " + str(e))
             # Retry logic
             self.reset_variable()
+            self.received_data = ''
             self.have_data_from_controller = False
             self.ser.close()
             time.sleep(1)  # Wait for 1 second before retrying
