@@ -8,9 +8,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     ld = LaunchDescription()
-    # function_config_path = PathJoinSubstitution(
-    #     [FindPackageShare("robot_core"), "config", "params.yaml"]
-    # )
 
     node_microros = Node(
         package="micro_ros_agent",
@@ -18,16 +15,7 @@ def generate_launch_description():
         output="screen",
         arguments=["serial", "--dev", "/dev/ttyUSB0"],
     )
-    node_joy = Node(package="joy", executable="Robot_mainRun_Control_Node")
-    node_joy_drive = Node(
-        package="robot_core",
-        executable="joy_drive",
-        parameters=[function_config_path],
-    )
-    ld.add_action(node_joy)
-    ld.add_action(node_joy_drive)
-    # ld.add_action(node_microros)
-
-    os.system("gnome-terminal -e 'bash -c \"ros2 launch abu_core microros.launch.py\"'")
-
+    
+    ld.add_action(node_microros)
+    
     return ld
