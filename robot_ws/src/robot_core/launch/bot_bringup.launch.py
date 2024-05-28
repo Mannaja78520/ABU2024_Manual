@@ -15,6 +15,7 @@ def generate_launch_description():
     
     robot_run_node = Node(
         package="robot_core",
+        output="screen",
         executable="runRobot"
     )
     
