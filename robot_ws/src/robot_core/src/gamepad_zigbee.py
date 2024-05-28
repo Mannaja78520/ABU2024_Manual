@@ -164,6 +164,7 @@ class gamepad_Zigbee:
                     self.received_data = received_bytes.decode('utf-8')
                 except UnicodeDecodeError as e:
                     print("UnicodeDecodeError:", e)
+                    self.use_last_data()
                     # Handle the error gracefully, e.g., skip this iteration
                     return
                 if expected_data_length <= len(self.received_data) <= 70:
@@ -259,6 +260,6 @@ class gamepad_Zigbee:
             time.sleep(1)  # Wait for 1 second before retrying
             self.ser = self.initialize_serial(self.port, self.baud_rate)
             if self.ser is None:
-                print("Failed to initialize serial. Cannot retry.")
+                print("Failed to initialize serial.")
                 return
             self.receive_data()  # Retry communication

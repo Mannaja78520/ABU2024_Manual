@@ -4,9 +4,10 @@ import numpy as np
 import time
 import sys
 import os
+from std_msgs.msg import String
 
 # script_dir = os.path.dirname(os.path.abspath(__file__))
-module_dir = os.path.join(os.path.expanduser('ABU2024_Manual/robot_core/src'))
+module_dir = os.path.join(os.path.expanduser('~/ABU2024_Manual/robot_core/src'))
 sys.path.append(module_dir)
 # sys.path.append('~/ABU2024_Manual/robot_ws/src/robot_core/src')
 
@@ -129,9 +130,10 @@ class mainRun(Node):
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
         )
-        # self.sent_gripper = self.create_publisher(
-        #     Twist, "gripper", qos_profile=qos.qos_profile_system_default
+        # self.sent_gamepad = self.create_publisher(
+        #     Twist, "gamepad", qos_profile=qos.qos_profile_system_default
         # )
+        self.sent_gamepad = self.create_publisher(String, 'gamepad', 70)
         self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
 
@@ -139,7 +141,7 @@ class mainRun(Node):
         return
         
     def Emergency_StartStop(self):
-        if(gamepad.upload):
+        if(gamepad.upload or gamepad.received_data == ''):
             self.Reset()
             self.EmergencyStop = True
             return
@@ -403,7 +405,10 @@ class mainRun(Node):
         
     def sent_to_microros(self):  # publisher drive topic
         movement_msg = Twist()
+        gamepad_msg = String()
+        
         gamepad.receive_data()
+        gamepad_msg.data = gamepad.received_data
         
         self.Emergency_StartStop()
         if self.EmergencyStop :
@@ -429,6 +434,7 @@ class mainRun(Node):
             movement_msg.angular.z = SpinBallSpeed
         
         self.sent_drive.publish(movement_msg)
+        self.sent_gamepad.publish(gamepad_msg)
 
 def main():
     rclpy.init()
