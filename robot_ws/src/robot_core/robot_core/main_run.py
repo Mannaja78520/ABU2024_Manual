@@ -3,7 +3,13 @@ import math
 import numpy as np
 import time
 import sys
-sys.path.append('~/ABU2024_Manual/robot_ws/src/robot_core/src')
+import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+module_dir = os.path.join(script_dir, '~/ABU2024_Manual/robot_core/src')
+sys.path.append(module_dir)
+# sys.path.append('~/ABU2024_Manual/robot_ws/src/robot_core/src')
+
 from controller import Controller
 from utilize import *
 from gamepad_zigbee import gamepad_Zigbee
