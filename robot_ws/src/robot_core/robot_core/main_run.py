@@ -5,8 +5,8 @@ import time
 import sys
 import os
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-module_dir = os.path.join(script_dir, '~/ABU2024_Manual/robot_core/src')
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+module_dir = os.path.join(os.path.expanduser('ABU2024_Manual/robot_core/src'))
 sys.path.append(module_dir)
 # sys.path.append('~/ABU2024_Manual/robot_ws/src/robot_core/src')
 
