@@ -13,10 +13,16 @@ def generate_launch_description():
         [FindPackageShare("robot_core"), "launch", "microros.launch.py"]
     )
     
+    robot_run_node = Node(
+        package="robot_core",
+        executable="runRobot"
+    )
+    
     launch_microros = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(microros_launch_path),
     )
     ld.add_action(launch_microros)
+    ld.add_action(robot_run_node)
     
     # os.system("gnome-terminal -e 'bash -c \"ros2 launch abu_core microros.launch.py\"'")
     
