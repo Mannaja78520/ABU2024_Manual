@@ -22,9 +22,10 @@ def generate_launch_description():
     launch_microros = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(microros_launch_path),
     )
-    ld.add_action(launch_microros)
+    # ld.add_action(launch_microros)
     ld.add_action(robot_run_node)
     
-    # os.system("gnome-terminal -e 'bash -c \"ros2 launch abu_core microros.launch.py\"'")
+    os.system("gnome-terminal -e 'bash -c \"ros2 launch robot_core microros.launch.py\"'")
+    # os.system("gnome-terminal -e 'bash -c \"ros2 launch robot_core microros.launch.py\"'")
     
     return ld
