@@ -287,10 +287,10 @@ class mainRun(Node):
             return 
         if lb and rb:
             # x = 1.0
-            Grip1.angle = 170
-            Grip2.angle = 170
-            Grip3.angle = 170
-            Grip4.angle = 170
+            Grip1.angle = 180
+            Grip2.angle = 180
+            Grip3.angle = 180
+            Grip4.angle = 180
             self.IS_13_Keep = self.IS_24_Keep = True
             time.sleep(0.35)
             return 
@@ -299,8 +299,8 @@ class mainRun(Node):
                 self.IS_13_Keep = False
                 if lt :
                     # x = 2.0
-                    Grip1.angle = 140
-                    Grip3.angle = 140
+                    Grip1.angle = 155
+                    Grip3.angle = 155
                     time.sleep(dropDelay)
                 # x = 3.0
                 Grip1.angle = 0
@@ -311,8 +311,8 @@ class mainRun(Node):
                 self.IS_24_Keep = False
                 if rt:
                     # x = 4.0
-                    Grip2.angle = 140
-                    Grip4.angle = 140
+                    Grip2.angle = 155
+                    Grip4.angle = 155
                     time.sleep(dropDelay) 
                 # x = 5.0
                 Grip2.angle = 0

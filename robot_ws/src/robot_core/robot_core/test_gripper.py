@@ -1,6 +1,6 @@
 import curses
 import sys
-sys.path.append('../robot_ws/src/robot_core/src')
+sys.path.append('ABU2024_Manual/robot_ws/src/robot_core/src')
 from utilize import clip
 from adafruit_servokit import ServoKit
 # define servo
