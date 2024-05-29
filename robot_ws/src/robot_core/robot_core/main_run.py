@@ -11,9 +11,9 @@ from std_msgs.msg import String
 # sys.path.append(module_dir)
 # sys.path.append('ABU2024_Manual/robot_ws/src/robot_core/src')
 
-from controller import Controller
-from utilize import *
-from gamepad_zigbee import gamepad_Zigbee
+from robot_core.controller import Controller
+from robot_core.utilize import *
+from robot_core.gamepad_zigbee import gamepad_Zigbee
 
 import lgpio
 from mpu9250_jmdev.registers import *
@@ -329,7 +329,7 @@ class mainRun(Node):
             self.ArmUp = True
             if(MTime > 2.3) :
                 # y = 4.0
-                BallUP_DOWN.angle = 140
+                BallUP_DOWN.angle = 125 
                 if(MTime > 2.8) :
                     # y = 5.0
                     self.ISBallSpin = True
