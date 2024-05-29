@@ -348,7 +348,7 @@ class mainRun(Node):
             self.MacroTime = self.CurrentTime
             self.GotBall = True
             return 
-        BallUP_DOWN.angle = 15
+        BallUP_DOWN.angle = 18
         BallLeftGrip.angle = 130
         BallRightGrip.angle = 55
         self.ArmUp = False
@@ -370,7 +370,7 @@ class mainRun(Node):
             # z = 3.0
             BallUP_DOWN.angle = 180
             time.sleep(0.5)
-            BallUP_DOWN.angle = 15
+            BallUP_DOWN.angle = 18
             time.sleep(0.3)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
@@ -390,7 +390,7 @@ class mainRun(Node):
         
         if(self.ArmUp and not self.ChargeBall):
             # z = 2.0
-            BallUP_DOWN.angle = 15
+            BallUP_DOWN.angle = 18
             time.sleep(0.2)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
