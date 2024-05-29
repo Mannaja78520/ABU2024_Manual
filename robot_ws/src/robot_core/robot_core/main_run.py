@@ -35,8 +35,8 @@ mpu = MPU9250(
             )
 
 # open gpio chip
-grip_slide = 23
-grip_up    = 24
+grip_slide = 24
+grip_up    = 23
 
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, grip_slide)
@@ -56,12 +56,12 @@ Grip1 = kit.servo[0]
 Grip2 = kit.servo[1]
 Grip3 = kit.servo[2]
 Grip4 = kit.servo[3]
-BallUP_DOWN = kit.servo[7]
-BallLeftGrip = kit.servo[7]
-BallRightGrip = kit.servo[7]
-# BallUP_DOWN = kit.servo[4]
-# BallLeftGrip = kit.servo[5]
-# BallRightGrip = kit.servo[6]
+BallUP_DOWN = kit.servo[4]
+BallLeftGrip = kit.servo[5]
+BallRightGrip = kit.servo[6]
+# BallUP_DOWN = kit.servo[7]
+# BallLeftGrip = kit.servo[7]
+# BallRightGrip = kit.servo[7]
 
 # setup servo
 def setupServo():
@@ -71,7 +71,7 @@ def setupServo():
     Grip4.angle = 0
     BallUP_DOWN.angle   = 180
     BallLeftGrip.angle  = 180
-    BallRightGrip.angle = 0
+    BallRightGrip.angle = 5
 
 class mainRun(Node):
     
@@ -119,7 +119,6 @@ class mainRun(Node):
         # Emergency variables
         self.EmergencyStop = True
         
-        self.received_data = ""
         self.Reset(True)
         setupServo()
         
@@ -130,10 +129,7 @@ class mainRun(Node):
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
         )
-        # self.sent_gamepad = self.create_publisher(
-        #     Twist, "gamepad", qos_profile=qos.qos_profile_system_default
-        # )
-        self.sent_gamepad = self.create_publisher(String, 'gamepad', 70)
+        self.sent_gamepad = self.create_publisher(String, 'gamepad', 60)
         self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
 
@@ -291,10 +287,10 @@ class mainRun(Node):
             return 
         if lb and rb:
             # x = 1.0
-            Grip1.angle = 112
-            Grip2.angle = 112
-            Grip3.angle = 112
-            Grip4.angle = 112
+            Grip1.angle = 170
+            Grip2.angle = 170
+            Grip3.angle = 170
+            Grip4.angle = 170
             self.IS_13_Keep = self.IS_24_Keep = True
             time.sleep(0.35)
             return 
@@ -303,10 +299,9 @@ class mainRun(Node):
                 self.IS_13_Keep = False
                 if lt :
                     # x = 2.0
-                    Grip1.angle = 86
-                    Grip3.angle = 86
+                    Grip1.angle = 140
+                    Grip3.angle = 140
                     time.sleep(dropDelay)
-                    return 
                 # x = 3.0
                 Grip1.angle = 0
                 Grip3.angle = 0
@@ -316,10 +311,9 @@ class mainRun(Node):
                 self.IS_24_Keep = False
                 if rt:
                     # x = 4.0
-                    Grip2.angle = 86
-                    Grip4.angle = 86
-                    time.sleep(dropDelay)
-                    return 
+                    Grip2.angle = 140
+                    Grip4.angle = 140
+                    time.sleep(dropDelay) 
                 # x = 5.0
                 Grip2.angle = 0
                 Grip4.angle = 0
@@ -333,10 +327,10 @@ class mainRun(Node):
             # y = 3.0
             BallUP_DOWN.angle = 160
             self.ArmUp = True
-            if(MTime > 2.5) :
+            if(MTime > 2.3) :
                 # y = 4.0
-                BallUP_DOWN.angle = 110
-                if(MTime > 3) :
+                BallUP_DOWN.angle = 140
+                if(MTime > 2.8) :
                     # y = 5.0
                     self.ISBallSpin = True
                     self.ChargeBall = True
@@ -374,7 +368,7 @@ class mainRun(Node):
         self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
-            BallUP_DOWN.angle = 175
+            BallUP_DOWN.angle = 180
             time.sleep(0.5)
             BallUP_DOWN.angle = 15
             time.sleep(0.3)
@@ -388,7 +382,7 @@ class mainRun(Node):
         if (not self.ArmUp and not self.ChargeBall):
             # z = 1.0
             BallLeftGrip.angle = 180
-            BallRightGrip.angle = 0
+            BallRightGrip.angle = 5
             time.sleep(0.2)
             BallUP_DOWN.angle = 175
             self.ArmUp = True

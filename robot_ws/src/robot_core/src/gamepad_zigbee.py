@@ -167,7 +167,7 @@ class gamepad_Zigbee:
                     self.use_last_data()
                     # Handle the error gracefully, e.g., skip this iteration
                     return
-                if expected_data_length <= len(self.received_data) <= 70:
+                if expected_data_length <= len(self.received_data) <= 60:
                     tokens = self.received_data.split(",")
                     try:
                         index = 0
@@ -221,6 +221,7 @@ class gamepad_Zigbee:
                             index += 1
                     except ValueError:
                         print("Error converting data to integer. Skipping...")
+                        self.ser.readline().decode('utf-8').rstrip()
                         self.use_last_data()
                         
                     # Discard any remaining data in the buffer
