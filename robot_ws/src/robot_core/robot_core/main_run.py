@@ -86,7 +86,7 @@ class mainRun(Node):
         self.CurrentTime = time.time()
         
         # Macro variables
-        self.yaw = math.radians(-90)
+        self.yaw = math.radians(90)
         self.LastTime = 0
         self.setpoint = 0
         self.lastRXTime = 0
@@ -162,8 +162,8 @@ class mainRun(Node):
         self.yaw += WrapRads(calibrate_gz * Dt)
         
         if (gamepad.screen):
-            self.yaw = math.radians(-90)
-            self.setpoint = math.radians(-90)
+            self.yaw = math.radians(90)
+            self.setpoint = math.radians(90)
             return
         
         m = gamepad.menu
