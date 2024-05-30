@@ -11,9 +11,9 @@ from std_msgs.msg import String
 # sys.path.append(module_dir)
 # sys.path.append('ABU2024_Manual/robot_ws/src/robot_core/src')
 
-from robot_core.controller import Controller
-from robot_core.utilize import *
-from robot_core.gamepad_zigbee import gamepad_Zigbee
+from src.controller import Controller
+from src.utilize import *
+from src.gamepad_zigbee import gamepad_Zigbee
 
 import lgpio
 from mpu9250_jmdev.registers import *
