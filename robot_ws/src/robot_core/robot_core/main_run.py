@@ -88,7 +88,7 @@ class mainRun(Node):
         # Macro variables
         self.yaw = math.radians(90)
         self.LastTime = 0
-        self.setpoint = 0
+        self.setpoint = math.radians(90)
         self.lastRXTime = 0
         self.UseIMU = False
         self.IMUHeading = True
