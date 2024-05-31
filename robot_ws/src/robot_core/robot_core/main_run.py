@@ -11,6 +11,8 @@ from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
 
 import lgpio
+# import RPi.GPIO as GPIO
+# GPIO.setmode(GPIO.BCM)
 from mpu9250_jmdev.registers import *
 from mpu9250_jmdev.mpu_9250 import MPU9250
 from adafruit_servokit import ServoKit
@@ -40,7 +42,8 @@ lgpio.gpio_claim_output(h, grip_slide)
 lgpio.gpio_claim_output(h, grip_up)
 lgpio.gpio_write(h, grip_slide, 1)
 lgpio.gpio_write(h, grip_up, 1)
-lgpio.gpio_claim_input(h, emergency_pin, lgpio.LGPIO_PULL_DOWN)
+lgpio.gpio_claim_input(h, emergency_pin, lgpio.SET_BIAS_PULL_DOWN)
+# GPIO.setup(emergency_pin = 25, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 # lgpio.gpio_read(h, emergency_pin)
 
 maxSpeed = 1023.0
