@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 #include <stdio.h>
-#include <Adafruit_NeoPixel.h>
+// #include <Adafruit_NeoPixel.h>
 // #include <ESP32Servo.h>
 
 #include <rcl/rcl.h>
