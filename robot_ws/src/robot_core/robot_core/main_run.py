@@ -9,12 +9,9 @@ from std_msgs.msg import String
 from src.controller import Controller
 from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
+from src.imu import IMU
 
 import lgpio
-# import RPi.GPIO as GPIO
-# GPIO.setmode(GPIO.BCM)
-from mpu9250_jmdev.registers import *
-from mpu9250_jmdev.mpu_9250 import MPU9250
 from adafruit_servokit import ServoKit
 
 from rclpy.node import Node
@@ -23,13 +20,7 @@ from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
 control = Controller(2.3, 0.03)
-mpu = MPU9250( 
-            address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
-            address_mpu_slave=None, 
-            bus=1, 
-            gfs=GFS_1000, 
-            afs=AFS_8G, 
-            )
+imu = IMU()
 
 # open gpio chip
 grip_slide = 24
@@ -84,13 +75,15 @@ class mainRun(Node):
         # Time
         self.CurrentTime = time.time()
         
-        # Macro variables
+        # IMU variables
         self.yaw = math.radians(90)
-        self.LastTime = 0
         self.setpoint = math.radians(90)
-        self.lastRXTime = 0
+        self.LastTime = 0
         self.UseIMU = False
         self.IMUHeading = True
+        
+        # Macro variables
+        self.lastRXTime = 0
         self.M_Pressed = False
         self.LSB_Pressed = False
 
@@ -107,10 +100,7 @@ class mainRun(Node):
         
         if IsResetGyro == True:
             # Config imu
-            mpu.configure()
-            mpu.calibrate()
-            mpu.configure()
-            mpu.gbias
+            imu.configure()
         
     def __init__(self):
         super().__init__("Robot_mainRun_Control_Node")
@@ -124,15 +114,15 @@ class mainRun(Node):
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
         )
-        self.sent_gamepad = self.create_publisher(String, 'gamepad', 60)
-        self.sent_drive = self.create_publisher(
-            Twist, "IMU", qos_profile=qos.qos_profile_system_default
+        self.sent_imu = self.create_publisher(
+            Twist, "debug/IMU", qos_profile=qos.qos_profile_system_default
         )
+        self.sent_gamepad = self.create_publisher(String, 'gamepad', 60)
         # self.debug = self.create_subscription(
         #     Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
         # )
         
-        self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
+        self.sent_drive_timer = self.create_timer(0.05, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
 
     # def debug_callback(self, msgin):
@@ -151,18 +141,19 @@ class mainRun(Node):
             self.EmergencyStop = False
             return
     
-    def imu(self):
+    def imu_Read_Action(self):
+        imu.read()
+        
         self.CurrentTime = time.time()
         Dt = self.CurrentTime - self.LastTime
         self.LastTime = self.CurrentTime
-        gyro_data = mpu.readGyroscopeMaster()
         
         # gyro_data[2] is gz
-        calibrate_gz = 0 if abs(gyro_data[2]) < 0.5 else gyro_data[2]
+        filter_gz = 0 if abs(imu.gz) < 0.5 else imu.gz
         
-        calibrate_gz = math.radians(calibrate_gz) * -1
+        filter_gz = math.radians(filter_gz) * -1
         
-        self.yaw += WrapRads(calibrate_gz * Dt)
+        self.yaw += WrapRads(filter_gz * Dt)
         
         if (gamepad.screen):
             self.yaw = math.radians(90)
@@ -403,6 +394,7 @@ class mainRun(Node):
         
     def sent_to_microros(self):  # publisher drive topic
         movement_msg = Twist()
+        imu_msg = Twist()
         gamepad_msg = String()
         
         gamepad.receive_data()
@@ -412,7 +404,7 @@ class mainRun(Node):
         if self.EmergencyStop :
             print (gamepad.received_data)
         if not self.EmergencyStop:
-            self.imu()
+            self.imu_Read_Action()
             self.imuHeading()
             self.Slide_Transform()
             self.UpDown_Transform()
@@ -427,11 +419,14 @@ class mainRun(Node):
             if not self.UseIMU:
                 movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot_IMU()
             
-            # print(self.ISBallSpin)
             movement_msg.angular.y = float(self.ISBallSpin)
             movement_msg.angular.z = SpinBallSpeed
         
+        imu_msg.lineaar = imu.accel_data
+        imu_msg.angular = imu.gyro_data
+        
         self.sent_drive.publish(movement_msg)
+        self.sent_imu.publish(imu_msg)
         self.sent_gamepad.publish(gamepad_msg)
 
 def main():
