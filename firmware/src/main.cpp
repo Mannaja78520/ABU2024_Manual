@@ -50,12 +50,12 @@
 
 //------------------------------ < Define > -------------------------------------//
 
-rcl_publisher_t debug_motor_publisher;
+// rcl_publisher_t debug_motor_publisher;
 
 // rcl_subscription_t gripper_subscriber;
 rcl_subscription_t moveMotor_subscriber;
 
-geometry_msgs__msg__Twist debug_motor_msg;
+// geometry_msgs__msg__Twist debug_motor_msg;
 // geometry_msgs__msg__Twist gripper_msg;
 geometry_msgs__msg__Twist moveMotor_msg;
 
@@ -234,11 +234,11 @@ bool createEntities()
     // create node
     RCCHECK(rclc_node_init_default(&node, "int32_publisher_rclc", "", &support));
 
-    RCCHECK(rclc_publisher_init_best_effort(
-        &debug_motor_publisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "debug/motor"));
+    // RCCHECK(rclc_publisher_init_best_effort(
+    //     &debug_motor_publisher,
+    //     &node,
+    //     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+    //     "debug/motor"));
 
     // RCCHECK(rclc_subscription_init_default(
     //     &gripper_subscriber,
@@ -285,7 +285,7 @@ bool destroyEntities()
     rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-    rcl_publisher_fini(&debug_motor_publisher, &node);
+    // rcl_publisher_fini(&debug_motor_publisher, &node);
     // rcl_subscription_fini(&gripper_subscriber, &node);
     rcl_subscription_fini(&moveMotor_subscriber, &node);
     rcl_node_fini(&node);
@@ -298,12 +298,12 @@ bool destroyEntities()
 
 void publishData()
 {
-    debug_motor_msg.linear.x = moveMotor_msg.linear.x;
-    debug_motor_msg.linear.y = moveMotor_msg.linear.y;
-    debug_motor_msg.linear.z = moveMotor_msg.linear.z;
-    debug_motor_msg.angular.x = moveMotor_msg.angular.x;
+    // debug_motor_msg.linear.x = moveMotor_msg.linear.x;
+    // debug_motor_msg.linear.y = moveMotor_msg.linear.y;
+    // debug_motor_msg.linear.z = moveMotor_msg.linear.z;
+    // debug_motor_msg.angular.x = moveMotor_msg.angular.x;
     // struct timespec time_stamp = getTime();
-    rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
+    // rcl_publish(&debug_motor_publisher, &debug_motor_msg, NULL);
 }
 
 void Move()

@@ -6,11 +6,6 @@ import time
 # import os
 from std_msgs.msg import String
 
-# script_dir = os.path.dirname(os.path.abspath(__file__))
-# module_dir = os.path.join(os.path.expanduser('~/ABU2024_Manual/robot_core/src'))
-# sys.path.append(module_dir)
-# sys.path.append('ABU2024_Manual/robot_ws/src/robot_core/src')
-
 from src.controller import Controller
 from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
@@ -25,7 +20,7 @@ from geometry_msgs.msg import Twist
 from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
-control = Controller(1.3, 0.01)
+control = Controller(2.3, 0.03)
 mpu = MPU9250( 
             address_mpu_master=MPU9050_ADDRESS_68, # In 0x68 Address
             address_mpu_slave=None, 
@@ -38,11 +33,15 @@ mpu = MPU9250(
 grip_slide = 24
 grip_up    = 23
 
+emergency_pin = 25
+
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, grip_slide)
 lgpio.gpio_claim_output(h, grip_up)
 lgpio.gpio_write(h, grip_slide, 1)
 lgpio.gpio_write(h, grip_up, 1)
+lgpio.gpio_claim_input(h, emergency_pin, lgpio.LGPIO_PULL_DOWN)
+# lgpio.gpio_read(h, emergency_pin)
 
 maxSpeed = 1023.0
 NormalSpeed = 1.0
@@ -51,17 +50,14 @@ turnSpeed = 0.5
 SpinBallSpeed = 1023.0
 
 # define servo
-kit = ServoKit(channels=8)
+kit = ServoKit(channels=16)
 Grip1 = kit.servo[0]
 Grip2 = kit.servo[1]
 Grip3 = kit.servo[2]
 Grip4 = kit.servo[3]
-BallUP_DOWN = kit.servo[4]
-BallLeftGrip = kit.servo[5]
-BallRightGrip = kit.servo[6]
-# BallUP_DOWN = kit.servo[7]
-# BallLeftGrip = kit.servo[7]
-# BallRightGrip = kit.servo[7]
+BallUP_DOWN = kit.servo[13]
+BallLeftGrip = kit.servo[14]
+BallRightGrip = kit.servo[15]
 
 # setup servo
 def setupServo():
@@ -122,27 +118,31 @@ class mainRun(Node):
         self.Reset(True)
         setupServo()
         
-        self.debug = self.create_subscription(
-            Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
-        )
-        
         self.sent_drive = self.create_publisher(
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
         )
         self.sent_gamepad = self.create_publisher(String, 'gamepad', 60)
+        self.sent_drive = self.create_publisher(
+            Twist, "IMU", qos_profile=qos.qos_profile_system_default
+        )
+        # self.debug = self.create_subscription(
+        #     Twist, "debug/motor", self.debug_callback, qos_profile=qos.qos_profile_system_default,
+        # )
+        
         self.sent_drive_timer = self.create_timer(0.03, self.sent_to_microros)
         # self.sent_gripper_timer = self.create_timer(0.05, self.sent_gripper_callback)
 
-    def debug_callback(self, msgin):
-        return
+    # def debug_callback(self, msgin):
+    #     return
         
     def Emergency_StartStop(self):
-        if(gamepad.upload or gamepad.received_data == ''):
+        if(gamepad.upload or gamepad.received_data == '' or lgpio.gpio_read(h, emergency_pin) == 0):
+            setupServo()
             self.Reset()
             self.EmergencyStop = True
             return
         
-        if (gamepad.logo and self.EmergencyStop):
+        if (gamepad.logo and self.EmergencyStop and lgpio.gpio_read(h, emergency_pin) == 1):
             self.Reset(True)
             setupServo()
             self.EmergencyStop = False
@@ -280,11 +280,6 @@ class mainRun(Node):
         rb = gamepad.right_bumper
         lt = gamepad.left_trigger  > 0.3
         rt = gamepad.right_trigger > 0.3
-        if not(lb or rb or rt or lt) :
-            self.K_Pressed = False
-            return
-        if self.K_Pressed:
-            return 
         if lb and rb:
             # x = 1.0
             Grip1.angle = 180
@@ -292,15 +287,21 @@ class mainRun(Node):
             Grip3.angle = 180
             Grip4.angle = 180
             self.IS_13_Keep = self.IS_24_Keep = True
-            time.sleep(0.35)
+            self.K_Pressed = True
             return 
+        if not(lb or rb or rt or lt) :
+            self.K_Pressed = False
+            return
+        if self.K_Pressed:
+            return 
+        self.K_Pressed = True
         if self.IS_13_Keep :
             if lb or lt :
                 self.IS_13_Keep = False
                 if lt :
                     # x = 2.0
-                    Grip1.angle = 155
-                    Grip3.angle = 155
+                    Grip1.angle = 158
+                    Grip3.angle = 158
                     time.sleep(dropDelay)
                 # x = 3.0
                 Grip1.angle = 0
@@ -311,8 +312,8 @@ class mainRun(Node):
                 self.IS_24_Keep = False
                 if rt:
                     # x = 4.0
-                    Grip2.angle = 155
-                    Grip4.angle = 155
+                    Grip2.angle = 158
+                    Grip4.angle = 158
                     time.sleep(dropDelay) 
                 # x = 5.0
                 Grip2.angle = 0
