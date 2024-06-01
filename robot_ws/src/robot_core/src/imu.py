@@ -19,7 +19,7 @@ class IMU:
             gfs=GFS_1000, 
             afs=AFS_8G, 
             )
-        self.config()
+        self.configure()
     def configure(self):
         # Config imu
         self.mpu.configure()

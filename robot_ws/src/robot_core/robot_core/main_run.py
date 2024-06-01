@@ -9,8 +9,8 @@ from src.controller import Controller
 from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
 from src.imu import IMU
-# from src.servoControl import *
-from adafruit_servokit import ServoKit
+from src.servoControl import *
+# from adafruit_servokit import ServoKit
 
 import lgpio
 
@@ -32,14 +32,14 @@ lgpio.gpio_claim_input(h, emergency_pin, lgpio.SET_BIAS_PULL_DOWN)
 # lgpio.gpio_read(h, emergency_pin)
 
 # define servo
-kit = ServoKit(channels=16)
-Grip1 = kit.servo[servo1]
-Grip2 = kit.servo[servo2]
-Grip3 = kit.servo[servo3]
-Grip4 = kit.servo[servo4]
-BallUP_DOWN = kit.servo[servo5]
-BallLeftGrip = kit.servo[servo6]
-BallRightGrip = kit.servo[servo7]
+# kit = ServoKit(channels=16)
+# Grip1 = kit.servo[servo1]
+# Grip2 = kit.servo[servo2]
+# Grip3 = kit.servo[servo3]
+# Grip4 = kit.servo[servo4]
+# BallUP_DOWN = kit.servo[servo5]
+# BallLeftGrip = kit.servo[servo6]
+# BallRightGrip = kit.servo[servo7]
 
 
 # setup servo
