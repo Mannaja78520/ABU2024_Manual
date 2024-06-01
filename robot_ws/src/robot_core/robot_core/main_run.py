@@ -384,8 +384,8 @@ class mainRun(Node):
             movement_msg.angular.y = float(self.ISBallSpin)
             movement_msg.angular.z = SpinBallSpeed
         
-        imu_msg.lineaar = imu.accel_data
-        imu_msg.angular = imu.gyro_data
+        imu_msg.lineaar.x, imu_msg.lineaar.y, imu_msg.lineaar.z = imu.accel_data
+        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
         print(lgpio.gpio_read(h, emergency_pin))
         
         self.sent_drive.publish(movement_msg)
