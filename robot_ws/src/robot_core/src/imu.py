@@ -5,18 +5,10 @@ import time
 from src.utilize import To_Radians
 
 class IMU:
-    accel_data = [0.0, 0.0, 0.0]
-    velocity_data = [0.0, 0.0, 0.0]
-    gyro_data = [0.0, 0.0, 0.0]
-    ax = 0.0
-    ay = 0.0
-    az = 0.0
-    vx = 0.0
-    vy = 0.0
-    vz = 0.0
-    gx = 0.0
-    gy = 0.0
-    gz = 0.0
+    accel_data = [ax, ay, az] = [0.0, 0.0, 0.0]
+    velocity_data = [vx, vy, vz] = [0.0, 0.0, 0.0]
+    distance_data = [dx, dy, dz] = [0.0, 0.0, 0.0]
+    gyro_data = [gx, gy, gz] = [0.0, 0.0, 0.0]
     CurrentTime = time.time()
     LastTime = CurrentTime
     def __init__(self):
@@ -53,12 +45,17 @@ class IMU:
         self.velocity_data[0] += self.accel_data[0] * Dt
         self.velocity_data[1] += self.accel_data[1] * Dt
         self.velocity_data[2] += self.accel_data[2] * Dt
-        
+
         self.velocity_data[0] = 0.0 if self.accel_data[0] == 0.0 else self.velocity_data[0]
         self.velocity_data[1] = 0.0 if self.accel_data[1] == 0.0 else self.velocity_data[1]
         self.velocity_data[2] = 0.0 if self.accel_data[2] == 0.0 else self.velocity_data[2]
         
+        self.distance_data[0] = self.velocity_data[0] * Dt
+        self.distance_data[1] = self.velocity_data[1] * Dt
+        self.distance_data[2] = self.velocity_data[2] * Dt
+        
         # Store the data in class attributes
         self.ax, self.ay, self.az = self.accel_data
         self.vx, self.vy, self.vz = self.velocity_data
+        self.dx, self.dy, self.dz = self.distance_data
         self.gx, self.gy, self.gz = self.gyro_data
