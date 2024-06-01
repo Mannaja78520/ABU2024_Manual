@@ -9,9 +9,8 @@ from src.controller import Controller
 from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
 from src.imu import IMU
-from src.servoControl import *
-# from adafruit_servokit import ServoKit
 
+from adafruit_servokit import ServoKit
 import lgpio
 
 from rclpy.node import Node
@@ -21,6 +20,16 @@ from rclpy import qos
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
 control = Controller(2.3, 0.03)
 imu = IMU()
+
+# define servo
+kit = ServoKit(channels=16)
+Grip1 = kit.servo[servo1]
+Grip2 = kit.servo[servo2]
+Grip3 = kit.servo[servo3]
+Grip4 = kit.servo[servo4]
+BallUP_DOWN = kit.servo[servo5]
+BallLeftGrip = kit.servo[servo6]
+BallRightGrip = kit.servo[servo7]
 
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, grip_slide)
