@@ -184,7 +184,6 @@ class mainRun(Node):
         # Slow movement
         ly = SlowSpeed if gamepad.dpad_up    else (-SlowSpeed if gamepad.dpad_down else ly)
         lx = SlowSpeed if gamepad.dpad_right else (-SlowSpeed if gamepad.dpad_left else lx)
-        
         if self.UseIMU :
             if self.IMUHeading :
                 x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
@@ -374,7 +373,7 @@ class mainRun(Node):
         gamepad.receive_data()
         gamepad_msg.data = gamepad.received_data
         imu.read()
-        imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = imu.distance_data
+        imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = imu.accel_data
         imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
         
         self.Emergency_StartStop()

@@ -6,8 +6,8 @@ from src.utilize import To_Radians
 
 class IMU:
     accel_data = [ax, ay, az] = [0.0, 0.0, 0.0]
-    velocity_data = [vx, vy, vz] = [0.0, 0.0, 0.0]
-    distance_data = [dx, dy, dz] = [0.0, 0.0, 0.0]
+    # velocity_data = [vx, vy, vz] = [0.0, 0.0, 0.0]
+    # distance_data = [dx, dy, dz] = [0.0, 0.0, 0.0]
     gyro_data = [gx, gy, gz] = [0.0, 0.0, 0.0]
     CurrentTime = time.time()
     LastTime = CurrentTime
@@ -28,9 +28,6 @@ class IMU:
         self.mpu.abias
         self.mpu.gbias
     def read(self):        
-        self.CurrentTime = time.time()
-        Dt = self.CurrentTime - self.LastTime
-        self.LastTime = self.CurrentTime
         # Read sensor data
         # This library send Gyro_data as a Deg/sec
         self.accel_data = self.mpu.readAccelerometerMaster()
@@ -41,21 +38,7 @@ class IMU:
         self.accel_data[1] = 0.0 if abs(self.accel_data[1]) < 0.05 else self.accel_data[1]
         
         self.gyro_data[2] = 0.0 if abs(self.gyro_data[2]) < 0.45 else To_Radians(self.gyro_data[2])
-        
-        self.velocity_data[0] += self.accel_data[0] * Dt
-        self.velocity_data[1] += self.accel_data[1] * Dt
-        self.velocity_data[2] += self.accel_data[2] * Dt
 
-        self.velocity_data[0] = 0.0 if self.accel_data[0] == 0.0 else self.velocity_data[0]
-        self.velocity_data[1] = 0.0 if self.accel_data[1] == 0.0 else self.velocity_data[1]
-        self.velocity_data[2] = 0.0 if self.accel_data[2] == 0.0 else self.velocity_data[2]
-        
-        self.distance_data[0] += self.velocity_data[0] * Dt
-        self.distance_data[1] += self.velocity_data[1] * Dt
-        self.distance_data[2] += self.velocity_data[2] * Dt
-        
         # Store the data in class attributes
         self.ax, self.ay, self.az = self.accel_data
-        self.vx, self.vy, self.vz = self.velocity_data
-        self.dx, self.dy, self.dz = self.distance_data
         self.gx, self.gy, self.gz = self.gyro_data
