@@ -50,9 +50,9 @@ class IMU:
         self.velocity_data[1] = 0.0 if self.accel_data[1] == 0.0 else self.velocity_data[1]
         self.velocity_data[2] = 0.0 if self.accel_data[2] == 0.0 else self.velocity_data[2]
         
-        self.distance_data[0] = self.velocity_data[0] * Dt
-        self.distance_data[1] = self.velocity_data[1] * Dt
-        self.distance_data[2] = self.velocity_data[2] * Dt
+        self.distance_data[0] += self.velocity_data[0] * Dt
+        self.distance_data[1] += self.velocity_data[1] * Dt
+        self.distance_data[2] += self.velocity_data[2] * Dt
         
         # Store the data in class attributes
         self.ax, self.ay, self.az = self.accel_data
