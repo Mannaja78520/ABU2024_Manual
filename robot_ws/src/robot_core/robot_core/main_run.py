@@ -4,12 +4,13 @@ import numpy as np
 import time
 from std_msgs.msg import String
 
+from config.config import *
 from src.controller import Controller
 from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
 from src.imu import IMU
-from src.servoControl import *
-from config.config import *
+# from src.servoControl import *
+from adafruit_servokit import ServoKit
 
 import lgpio
 
@@ -29,6 +30,17 @@ lgpio.gpio_write(h, grip_up, 1)
 lgpio.gpio_claim_input(h, emergency_pin, lgpio.SET_BIAS_PULL_DOWN)
 # GPIO.setup(emergency_pin = 25, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 # lgpio.gpio_read(h, emergency_pin)
+
+# define servo
+kit = ServoKit(channels=16)
+Grip1 = kit.servo[servo1]
+Grip2 = kit.servo[servo2]
+Grip3 = kit.servo[servo3]
+Grip4 = kit.servo[servo4]
+BallUP_DOWN = kit.servo[servo5]
+BallLeftGrip = kit.servo[servo6]
+BallRightGrip = kit.servo[servo7]
+
 
 # setup servo
 def setupServo():
