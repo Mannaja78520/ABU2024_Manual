@@ -92,7 +92,7 @@ class mainRun(Node):
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
         )
         self.sent_imu = self.create_publisher(
-            Twist, "debug/IMU", qos_profile=qos.qos_profile_system_default
+            Twist, "IMU", qos_profile=qos.qos_profile_system_default
         )
         self.sent_gamepad = self.create_publisher(String, 'gamepad', 60)
         # self.debug = self.create_subscription(
