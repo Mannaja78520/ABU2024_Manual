@@ -1,7 +1,10 @@
 import math
 
-def AtTargetRange(number, target, range):
-    return bool(target - range < number and number < target + range)
+def To_Radians(degs):
+    return math.radians(degs) * -1
+
+def To_Degrees(Rads):
+    return math.degrees(Rads) * -1
 
 def WrapRads(rads):
     if rads >  math.pi :
@@ -34,3 +37,6 @@ def sig_num(number):
 
 def clip(value, min_val, max_val):
     return max(min(value, max_val), min_val)
+
+def AtTargetRange(number, target, range):
+    return bool(target - range < number and number < target + range)

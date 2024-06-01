@@ -1,0 +1,8 @@
+# Servo Pins
+servo1: 0
+servo2: 1
+servo3: 2
+servo4: 3
+servo5: 13
+servo6: 14
+servo7: 15

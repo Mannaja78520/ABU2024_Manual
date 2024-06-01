@@ -1,0 +1,6 @@
+# Speed config
+max_speed: 1023.0
+normal_speed: 1.0
+slow_speed: 0.4
+turn_speed: 0.5
+spin_ball_speed: 1023.0

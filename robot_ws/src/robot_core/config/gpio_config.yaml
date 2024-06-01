@@ -1,0 +1,4 @@
+# Define GPIO Chipset
+grip_up: 23
+grip_slide: 24
+emergency_pin: 25

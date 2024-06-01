@@ -2,17 +2,16 @@ import rclpy
 import math
 import numpy as np
 import time
-# import sys
-# import os
 from std_msgs.msg import String
 
 from src.controller import Controller
 from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
 from src.imu import IMU
+from src.servoControl import *
+from config.config import *
 
 import lgpio
-from adafruit_servokit import ServoKit
 
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -22,12 +21,6 @@ gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
 control = Controller(2.3, 0.03)
 imu = IMU()
 
-# open gpio chip
-grip_slide = 24
-grip_up    = 23
-
-emergency_pin = 25
-
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, grip_slide)
 lgpio.gpio_claim_output(h, grip_up)
@@ -36,22 +29,6 @@ lgpio.gpio_write(h, grip_up, 1)
 lgpio.gpio_claim_input(h, emergency_pin, lgpio.SET_BIAS_PULL_DOWN)
 # GPIO.setup(emergency_pin = 25, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 # lgpio.gpio_read(h, emergency_pin)
-
-maxSpeed = 1023.0
-NormalSpeed = 1.0
-SlowSpeed = 0.4
-turnSpeed = 0.5
-SpinBallSpeed = 1023.0
-
-# define servo
-kit = ServoKit(channels=16)
-Grip1 = kit.servo[0]
-Grip2 = kit.servo[1]
-Grip3 = kit.servo[2]
-Grip4 = kit.servo[3]
-BallUP_DOWN = kit.servo[13]
-BallLeftGrip = kit.servo[14]
-BallRightGrip = kit.servo[15]
 
 # setup servo
 def setupServo():
@@ -76,10 +53,10 @@ class mainRun(Node):
         self.CurrentTime = time.time()
         
         # IMU variables
-        self.yaw = math.radians(90)
-        self.setpoint = math.radians(90)
+        self.yaw = To_Radians(-90)
+        self.setpoint = To_Radians(-90)
         self.LastTime = 0
-        self.UseIMU = False
+        self.UseIMU = True
         self.IMUHeading = True
         
         # Macro variables
@@ -151,13 +128,13 @@ class mainRun(Node):
         # gyro_data[2] is gz
         filter_gz = 0 if abs(imu.gz) < 0.5 else imu.gz
         
-        filter_gz = math.radians(filter_gz) * -1
+        filter_gz = To_Radians(filter_gz)
         
         self.yaw += WrapRads(filter_gz * Dt)
         
         if (gamepad.screen):
-            self.yaw = math.radians(90)
-            self.setpoint = math.radians(90)
+            self.yaw = To_Radians(-90)
+            self.setpoint = To_Radians(-90)
             return
         
         m = gamepad.menu
@@ -190,51 +167,39 @@ class mainRun(Node):
         self.IMUHeading = False
             
     def MoveRobot(self):
+        # Gain movement
         lx =  gamepad.lx * NormalSpeed
         ly =  gamepad.ly * NormalSpeed * -1
         rx =  gamepad.rx * turnSpeed
 
+        # Slow movement
         ly = SlowSpeed if gamepad.dpad_up    else(-SlowSpeed if gamepad.dpad_down else ly)
         lx = SlowSpeed if gamepad.dpad_right else (-SlowSpeed if gamepad.dpad_left else lx)
+        
+        if self.UseIMU :
+            if self.IMUHeading :
+                x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
+                y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
+            else :
+                x2  =  lx
+                y2  =  ly
+            
+            R = control.Calculate(WrapRads(self.setpoint - self.yaw))
+            self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
+            if (rx != 0 or  self.CurrentTime - self.lastRXTime < 0.3) :
+                R = rx
+                self.setpoint = self.yaw
+        else :
+            self.setpoint = self.yaw
+            x2 = lx
+            y2 = ly
+            R  = rx
 
-        self.setpoint = self.yaw
-
-        D = max(abs(lx)+abs(ly)+abs(rx), 1.0)
-
+        D = max(abs(x2)+abs(y2)+abs(R), 1.0)
+        motor4Speed = float("{:.1f}".format((ly + lx - rx) / D * maxSpeed))
         motor1Speed = float("{:.1f}".format((ly + lx + rx) / D * maxSpeed))
         motor2Speed = float("{:.1f}".format((ly - lx - rx) / D * maxSpeed))
         motor3Speed = float("{:.1f}".format((ly - lx + rx) / D * maxSpeed))
-        motor4Speed = float("{:.1f}".format((ly + lx - rx) / D * maxSpeed))
-        return motor1Speed, motor2Speed, motor3Speed, motor4Speed
-    
-    def MoveRobot_IMU(self):
-        lx =  gamepad.lx * NormalSpeed
-        ly =  gamepad.ly * NormalSpeed * -1
-        rx =  gamepad.rx * turnSpeed
-
-        ly = SlowSpeed if gamepad.dpad_up    else (-SlowSpeed if gamepad.dpad_down else ly)
-        lx = SlowSpeed if gamepad.dpad_right else (-SlowSpeed if gamepad.dpad_left else lx)
-        
-        if self.IMUHeading :
-            x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
-            y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
-        if not self.IMUHeading :
-            x2  =  lx
-            y2  =  ly
-        
-        R = control.Calculate(WrapRads(self.setpoint - self.yaw))
-        # R = rx
-        self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
-        if (rx != 0 or  self.CurrentTime - self.lastRXTime < 0.3) :
-            R = rx
-            self.setpoint = self.yaw
-
-        D = max(abs(x2)+abs(y2)+abs(R), 1.0)
-
-        motor1Speed = float("{:.1f}".format((y2 + x2 + R) / D * maxSpeed))
-        motor2Speed = float("{:.1f}".format((y2 - x2 - R) / D * maxSpeed))
-        motor3Speed = float("{:.1f}".format((y2 - x2 + R) / D * maxSpeed))
-        motor4Speed = float("{:.1f}".format((y2 + x2 - R) / D * maxSpeed))
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
     
     def Slide_Transform(self):
@@ -414,11 +379,7 @@ class mainRun(Node):
             if not(self.ISGripSlide or self.ISGripUP):
                 self.keepBall()         
             
-            if self.UseIMU:
-                movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
-            if not self.UseIMU:
-                movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot_IMU()
-            
+            movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
             movement_msg.angular.y = float(self.ISBallSpin)
             movement_msg.angular.z = SpinBallSpeed
         
