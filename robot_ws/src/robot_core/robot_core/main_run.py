@@ -9,7 +9,7 @@ from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
 from src.imu import IMU
 from src.servoControl import *
-from config import *
+from config.config import *
 
 import lgpio
 
