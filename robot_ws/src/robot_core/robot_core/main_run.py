@@ -92,7 +92,7 @@ class mainRun(Node):
             Twist, "moveMotor", qos_profile=qos.qos_profile_system_default
         )
         self.sent_imu = self.create_publisher(
-            Twist, "IMU", qos_profile=qos.qos_profile_system_default
+            Twist, "imu", qos_profile=qos.qos_profile_system_default
         )
         self.sent_gamepad = self.create_publisher(String, 'gamepad', 60)
         # self.debug = self.create_subscription(
@@ -384,8 +384,8 @@ class mainRun(Node):
             movement_msg.angular.y = float(self.ISBallSpin)
             movement_msg.angular.z = SpinBallSpeed
         
-        imu_msg.lineaar.x, imu_msg.lineaar.y, imu_msg.lineaar.z = imu.accel_data
-        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
+        imu_msg.lineaar = imu.accel_data
+        imu_msg.angular = imu.gyro_data
         print(lgpio.gpio_read(h, emergency_pin))
         
         self.sent_drive.publish(movement_msg)
