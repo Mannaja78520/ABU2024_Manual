@@ -30,9 +30,9 @@ class IMU:
     def read(self):        
         # This library send data as a Deg/sec
         # Read sensor data
-        accel_data = self.mpu.readAccelerometerMaster()
-        gyro_data = self.mpu.readGyroscopeMaster()
+        self.accel_data = self.mpu.readAccelerometerMaster()
+        self.gyro_data = self.mpu.readGyroscopeMaster()
         
         # Store the data in class attributes
-        self.ax, self.ay, self.az = accel_data
-        self.gx, self.gy, self.gz = gyro_data
+        self.ax, self.ay, self.az = self.accel_data
+        self.gx, self.gy, self.gz = self.gyro_data
