@@ -1,6 +1,5 @@
 import rclpy
 import math
-import numpy as np
 import time
 from std_msgs.msg import String
 
@@ -37,19 +36,6 @@ lgpio.gpio_claim_output(h, grip_up)
 lgpio.gpio_write(h, grip_slide, 1)
 lgpio.gpio_write(h, grip_up, 1)
 lgpio.gpio_claim_input(h, emergency_pin, lgpio.SET_BIAS_PULL_DOWN)
-# GPIO.setup(emergency_pin = 25, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-# lgpio.gpio_read(h, emergency_pin)
-
-# define servo
-# kit = ServoKit(channels=16)
-# Grip1 = kit.servo[servo1]
-# Grip2 = kit.servo[servo2]
-# Grip3 = kit.servo[servo3]
-# Grip4 = kit.servo[servo4]
-# BallUP_DOWN = kit.servo[servo5]
-# BallLeftGrip = kit.servo[servo6]
-# BallRightGrip = kit.servo[servo7]
-
 
 # setup servo
 def setupServo():
@@ -74,11 +60,15 @@ class mainRun(Node):
         self.CurrentTime = time.time()
         
         # IMU variables
-        self.yaw = To_Radians(-90)
-        self.setpoint = To_Radians(-90)
-        self.LastTime = 0
+        self.LastTime = self.CurrentTime
         self.UseIMU = True
         self.IMUHeading = True
+        # Gyro
+        self.yaw = To_Radians(-90)
+        self.setpoint = To_Radians(-90)
+        # Accel
+        self.accel_x_m2 = 0.0
+        self.accel_y_m2 = 0.0
         
         # Macro variables
         self.lastRXTime = 0
@@ -145,12 +135,11 @@ class mainRun(Node):
         Dt = self.CurrentTime - self.LastTime
         self.LastTime = self.CurrentTime
         
-        # gyro_data[2] is gz
-        filter_gz = 0 if abs(imu.gz) < 0.5 else imu.gz
+        self.accel_x_m2 = 0 if abs(imu.ax) < 0.05 else imu.ax 
         
-        filter_gz = To_Radians(filter_gz)
-        
+        filter_gz = 0 if abs(imu.gz) < 0.5 else To_Radians(imu.gz)
         self.yaw += WrapRads(filter_gz * Dt)
+        # print(self.yaw)
         
         if (gamepad.screen):
             self.yaw = To_Radians(-90)
@@ -216,10 +205,10 @@ class mainRun(Node):
             R  = rx
 
         D = max(abs(x2)+abs(y2)+abs(R), 1.0)
-        motor4Speed = float("{:.1f}".format((ly + lx - rx) / D * maxSpeed))
-        motor1Speed = float("{:.1f}".format((ly + lx + rx) / D * maxSpeed))
-        motor2Speed = float("{:.1f}".format((ly - lx - rx) / D * maxSpeed))
-        motor3Speed = float("{:.1f}".format((ly - lx + rx) / D * maxSpeed))
+        motor4Speed = float("{:.1f}".format((y2 + x2 - R) / D * maxSpeed))
+        motor1Speed = float("{:.1f}".format((y2 + x2 + R) / D * maxSpeed))
+        motor2Speed = float("{:.1f}".format((y2 - x2 - R) / D * maxSpeed))
+        motor3Speed = float("{:.1f}".format((y2 - x2 + R) / D * maxSpeed))
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
     
     def Slide_Transform(self):
@@ -389,8 +378,8 @@ class mainRun(Node):
         imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
         
         self.Emergency_StartStop()
-        if self.EmergencyStop :
-            print (gamepad.received_data)
+        # if self.EmergencyStop :
+        #     print (imu.gz)
         if not self.EmergencyStop:
             self.imu_Read_Action()
             self.imuHeading()
