@@ -106,13 +106,14 @@ class mainRun(Node):
     #     return
         
     def Emergency_StartStop(self):
-        if(gamepad.upload or gamepad.received_data == '' or lgpio.gpio_read(h, emergency_pin) == 0):
+        IS_EmergencyPress = lgpio.gpio_read(h, emergency_pin)
+        if(gamepad.upload or gamepad.received_data == '' or IS_EmergencyPress):
             setupServo()
             self.Reset()
             self.EmergencyStop = True
             return
         
-        if (gamepad.logo and self.EmergencyStop and lgpio.gpio_read(h, emergency_pin) == 1):
+        if (gamepad.logo and self.EmergencyStop and not IS_EmergencyPress):
             self.Reset(True)
             setupServo()
             self.EmergencyStop = False
@@ -385,6 +386,7 @@ class mainRun(Node):
         
         imu_msg.lineaar = imu.accel_data
         imu_msg.angular = imu.gyro_data
+        print(lgpio.gpio_read(h, emergency_pin))
         
         self.sent_drive.publish(movement_msg)
         self.sent_imu.publish(imu_msg)
