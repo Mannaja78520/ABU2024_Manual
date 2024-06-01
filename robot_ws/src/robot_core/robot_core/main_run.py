@@ -118,22 +118,20 @@ class mainRun(Node):
     #     return
         
     def Emergency_StartStop(self):
-        IS_EmergencyPress = lgpio.gpio_read(h, emergency_pin)
-        if(gamepad.upload or gamepad.received_data == '' or IS_EmergencyPress):
+        IS_EmergencyActive = lgpio.gpio_read(h, emergency_pin)
+        if(gamepad.upload or gamepad.received_data == '' or not IS_EmergencyActive):
             setupServo()
             self.Reset()
             self.EmergencyStop = True
             return
         
-        if (gamepad.logo and self.EmergencyStop and not IS_EmergencyPress):
+        if (gamepad.logo and self.EmergencyStop and IS_EmergencyActive):
             self.Reset(True)
             setupServo()
             self.EmergencyStop = False
             return
     
     def imu_Read_Action(self):
-        imu.read()
-        
         self.CurrentTime = time.time()
         Dt = self.CurrentTime - self.LastTime
         self.LastTime = self.CurrentTime
@@ -377,6 +375,9 @@ class mainRun(Node):
         
         gamepad.receive_data()
         gamepad_msg.data = gamepad.received_data
+        imu.read()
+        imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = imu.accel_data
+        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
         
         self.Emergency_StartStop()
         if self.EmergencyStop :
@@ -396,9 +397,7 @@ class mainRun(Node):
             movement_msg.angular.y = float(self.ISBallSpin)
             movement_msg.angular.z = SpinBallSpeed
         
-        imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = imu.accel_data
-        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
-        print(lgpio.gpio_read(h, emergency_pin))
+        # print(lgpio.gpio_read(h, emergency_pin))
         
         self.sent_drive.publish(movement_msg)
         self.sent_imu.publish(imu_msg)
