@@ -193,7 +193,7 @@ class mainRun(Node):
         rx =  gamepad.rx * turnSpeed
 
         # Slow movement
-        ly = SlowSpeed if gamepad.dpad_up    else(-SlowSpeed if gamepad.dpad_down else ly)
+        ly = SlowSpeed if gamepad.dpad_up    else (-SlowSpeed if gamepad.dpad_down else ly)
         lx = SlowSpeed if gamepad.dpad_right else (-SlowSpeed if gamepad.dpad_left else lx)
         
         if self.UseIMU :
