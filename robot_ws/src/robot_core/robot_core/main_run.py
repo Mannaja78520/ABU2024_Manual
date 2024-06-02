@@ -66,11 +66,9 @@ class mainRun(Node):
         # Gyro
         self.yaw = To_Radians(-90)
         self.setpoint = To_Radians(-90)
-        # Accel
-        self.accel_x_m2 = 0.0
-        self.accel_y_m2 = 0.0
         
         # Macro variables
+        self.lastMoveTime = 0
         self.lastRXTime = 0
         self.M_Pressed = False
         self.LSB_Pressed = False
@@ -192,8 +190,9 @@ class mainRun(Node):
                 x2  =  lx
                 y2  =  ly
             
-            R = control.Calculate(WrapRads(self.setpoint - self.yaw))            
-            if lx == 0.0 and ly == 0.0 and R < 35:
+            R = control.Calculate(WrapRads(self.setpoint - self.yaw))   
+            self.lastMoveTime = self.CurrentTime if lx != 0 and ly != 0 else self.lastMoveTime
+            if abs(R) < 35 and self.CurrentTime - self.lastMoveTime > 0.3:
                 R = 0.0
             
             self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
