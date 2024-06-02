@@ -196,7 +196,7 @@ class mainRun(Node):
             if lastMove > 1 :
                 if abs(R) < 35:
                     R = 0.0
-            if lastMove > 0.1:
+            elif lastMove > 0.1:
                 if abs(R) < 10:
                     R = 0.0
                 
