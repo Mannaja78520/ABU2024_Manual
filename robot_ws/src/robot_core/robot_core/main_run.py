@@ -194,7 +194,7 @@ class mainRun(Node):
             
             R = control.Calculate(WrapRads(self.setpoint - self.yaw))
             self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
-            if (rx != 0 or  self.CurrentTime - self.lastRXTime < 0.3) :
+            if (rx != 0 or  self.CurrentTime - self.lastRXTime < 0.45) :
                 R = rx
                 self.setpoint = self.yaw
         else :

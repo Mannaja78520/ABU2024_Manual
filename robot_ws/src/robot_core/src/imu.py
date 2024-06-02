@@ -45,7 +45,7 @@ class IMU:
         self.accel_data[0] = 0.0 if abs(self.accel_data[0]) < 0.05 else self.accel_data[0]
         self.accel_data[1] = 0.0 if abs(self.accel_data[1]) < 0.05 else self.accel_data[1]
         
-        filter_gz = 0 if abs(self.gyro_data[2]) < 0.475 else To_Radians(self.gyro_data[2])
+        filter_gz = 0 if abs(self.gyro_data[2]) < 0.475 else self.gyro_data[2]
         
         self.yaw += WrapDegs(filter_gz * Dt)
 
