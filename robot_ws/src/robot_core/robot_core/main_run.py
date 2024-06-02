@@ -374,8 +374,7 @@ class mainRun(Node):
         gamepad_msg.data = gamepad.received_data
         imu.read()
         imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = imu.accel_data
-        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
-        
+        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data[0], imu.gyro_data[1], self.yaw
         self.Emergency_StartStop()
         # if self.EmergencyStop :
         #     print (imu.gz)
