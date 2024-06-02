@@ -17,7 +17,7 @@ from geometry_msgs.msg import Twist
 from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
-control = Controller(2.3, 0.03)
+control = Controller(2.32, 0.1)
 imu = IMU()
 
 # define servo
@@ -192,7 +192,10 @@ class mainRun(Node):
                 x2  =  lx
                 y2  =  ly
             
-            R = control.Calculate(WrapRads(self.setpoint - self.yaw))
+            R = control.Calculate(WrapRads(self.setpoint - self.yaw))            
+            if lx == 0.0 and ly == 0.0 and R < 35:
+                R = 0.0
+            
             self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
             if (rx != 0 or  self.CurrentTime - self.lastRXTime < 0.45) :
                 R = rx
