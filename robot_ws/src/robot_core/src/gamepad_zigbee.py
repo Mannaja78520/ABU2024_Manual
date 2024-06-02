@@ -246,7 +246,7 @@ class gamepad_Zigbee:
                 self.ser.readline().decode('utf-8').rstrip()
                 self.use_last_data()
                 return
-            if self.CurrentTime - self.last_data_time < 0.3:
+            if self.CurrentTime - self.last_data_time < 0.45:
                 self.have_data_from_controller = True
                 self.use_last_data()
                 return
