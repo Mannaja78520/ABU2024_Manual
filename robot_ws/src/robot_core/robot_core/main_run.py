@@ -137,7 +137,7 @@ class mainRun(Node):
         
         self.accel_x_m2 = 0 if abs(imu.ax) < 0.05 else imu.ax 
         
-        filter_gz = 0 if abs(imu.gz) < 0.5 else To_Radians(imu.gz)
+        filter_gz = 0 if abs(imu.gz) < 0.45 else To_Radians(imu.gz)
         self.yaw += WrapRads(filter_gz * Dt)
         # print(self.yaw)
         
@@ -374,7 +374,8 @@ class mainRun(Node):
         gamepad_msg.data = gamepad.received_data
         imu.read()
         imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = imu.accel_data
-        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data[0], imu.gyro_data[1], self.yaw
+        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gyro_data
+        
         self.Emergency_StartStop()
         # if self.EmergencyStop :
         #     print (imu.gz)

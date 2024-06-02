@@ -36,8 +36,6 @@ class IMU:
         # filter
         self.accel_data[0] = 0.0 if abs(self.accel_data[0]) < 0.05 else self.accel_data[0]
         self.accel_data[1] = 0.0 if abs(self.accel_data[1]) < 0.05 else self.accel_data[1]
-        
-        self.gyro_data[2] = 0.0 if abs(self.gyro_data[2]) < 0.45 else To_Radians(self.gyro_data[2])
 
         # Store the data in class attributes
         self.ax, self.ay, self.az = self.accel_data
