@@ -190,7 +190,7 @@ class mainRun(Node):
                 y2  =  ly
             
             R = control.Calculate(WrapRads(self.setpoint - self.yaw))   
-            if lx == 0.0 and ly == 0.0 and abs(R) < 30:
+            if (lx == 0.0 and ly == 0.0 and rx == 0.0) and abs(R) < 8:
                 R = 0.0
             
             self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
