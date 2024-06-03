@@ -68,7 +68,6 @@ class mainRun(Node):
         self.setpoint = To_Radians(-90)
         
         # Macro variables
-        self.lastMoveTime = 0
         self.lastRXTime = 0
         self.M_Pressed = False
         self.LSB_Pressed = False
@@ -191,15 +190,8 @@ class mainRun(Node):
                 y2  =  ly
             
             R = control.Calculate(WrapRads(self.setpoint - self.yaw))   
-            self.lastMoveTime = self.CurrentTime if lx != 0 and ly != 0 else self.lastMoveTime
-            lastMove = self.CurrentTime - self.lastMoveTime
-            if lastMove > 1 :
-                if abs(R) < 35:
-                    R = 0.0
-            elif lastMove > 0.1:
-                if abs(R) < 10:
-                    R = 0.0
-                
+            if lx == 0.0 and ly == 0.0 and abs(R) < 30:
+                R = 0.0
             
             self.lastRXTime = self.CurrentTime if rx != 0 else self.lastRXTime
             if (rx != 0 or  self.CurrentTime - self.lastRXTime < 0.45) :
@@ -303,10 +295,10 @@ class mainRun(Node):
             # y = 3.0
             BallUP_DOWN.angle = 160
             self.ArmUp = True
-            if(MTime > 2.3) :
+            if(MTime > 2) :
                 # y = 4.0
-                BallUP_DOWN.angle = 125 
-                if(MTime > 2.8) :
+                BallUP_DOWN.angle = 135
+                if(MTime > 2.5) :
                     # y = 5.0
                     self.ISBallSpin = True
                     self.ChargeBall = True
@@ -324,7 +316,7 @@ class mainRun(Node):
             self.MacroTime = self.CurrentTime
             self.GotBall = True
             return 
-        BallUP_DOWN.angle = 18
+        BallUP_DOWN.angle = 15
         BallLeftGrip.angle = 130
         BallRightGrip.angle = 55
         self.ArmUp = False
@@ -344,9 +336,9 @@ class mainRun(Node):
         self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
-            BallUP_DOWN.angle = 180
+            BallUP_DOWN.angle = 150
             time.sleep(0.5)
-            BallUP_DOWN.angle = 18
+            BallUP_DOWN.angle = 15
             time.sleep(0.3)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
@@ -366,7 +358,7 @@ class mainRun(Node):
         
         if(self.ArmUp and not self.ChargeBall):
             # z = 2.0
-            BallUP_DOWN.angle = 18
+            BallUP_DOWN.angle = 15
             time.sleep(0.2)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
