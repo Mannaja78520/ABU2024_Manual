@@ -336,7 +336,7 @@ class mainRun(Node):
         self.X_Pressed = True
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
-            BallUP_DOWN.angle = 150
+            BallUP_DOWN.angle = 180
             time.sleep(0.5)
             BallUP_DOWN.angle = 15
             time.sleep(0.3)
