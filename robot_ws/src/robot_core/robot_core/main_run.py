@@ -242,7 +242,7 @@ class mainRun(Node):
 
     def keepHarvest(self):
         # x = 0.0
-        dropDelay = 0.4
+        dropDelay = 0.3
         lb = gamepad.left_bumper
         rb = gamepad.right_bumper
         lt = gamepad.left_trigger  > 0.3
@@ -337,9 +337,9 @@ class mainRun(Node):
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
             BallUP_DOWN.angle = 180
-            time.sleep(0.5)
+            time.sleep(0.4)
             BallUP_DOWN.angle = 15
-            time.sleep(0.3)
+            time.sleep(0.1)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
             self.ArmUp = False
@@ -351,7 +351,7 @@ class mainRun(Node):
             # z = 1.0
             BallLeftGrip.angle = 180
             BallRightGrip.angle = 5
-            time.sleep(0.2)
+            time.sleep(0.1)
             BallUP_DOWN.angle = 175
             self.ArmUp = True
             return 
@@ -359,7 +359,7 @@ class mainRun(Node):
         if(self.ArmUp and not self.ChargeBall):
             # z = 2.0
             BallUP_DOWN.angle = 15
-            time.sleep(0.2)
+            time.sleep(0.1)
             BallLeftGrip.angle = 130
             BallRightGrip.angle = 55
             self.ArmUp = self.GotBall = self.ChargeBall = False
