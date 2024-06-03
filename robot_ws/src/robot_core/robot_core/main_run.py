@@ -298,7 +298,7 @@ class mainRun(Node):
             if(MTime > 2) :
                 # y = 4.0
                 BallUP_DOWN.angle = 135
-                if(MTime > 2.5) :
+                if(MTime > 2.3) :
                     # y = 5.0
                     self.ISBallSpin = True
                     self.ChargeBall = True
@@ -337,7 +337,7 @@ class mainRun(Node):
         if self.ChargeBall and self.ArmUp and x: # KickBall
             # z = 3.0
             BallUP_DOWN.angle = 180
-            time.sleep(0.4)
+            time.sleep(0.35)
             BallUP_DOWN.angle = 15
             time.sleep(0.1)
             BallLeftGrip.angle = 130
