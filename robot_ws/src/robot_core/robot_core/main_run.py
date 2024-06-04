@@ -87,6 +87,8 @@ class mainRun(Node):
         self.lastx2 = self.lasty2 = [0.0, 0.0, 0.0, 0.0]
         # Control Reset
         imu_control.ResetVariable()
+        brake_control_x2.ResetVariable()
+        brake_control_y2.ResetVariable()
         
         if IsResetGyro == True:
             # Config imu
