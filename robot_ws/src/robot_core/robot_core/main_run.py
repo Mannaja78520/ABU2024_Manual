@@ -17,7 +17,9 @@ from geometry_msgs.msg import Twist
 from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
-control = Controller(2.32, 0.1)
+imu_control = Controller(2.32, 0.1)
+brake_control_x2 = Controller(kp = 1, ki = 0.006)
+brake_control_y2 = Controller(kp = 1.5, ki = 0.01, kd = 0.01)
 imu = IMU()
 
 # define servo
@@ -80,8 +82,11 @@ class mainRun(Node):
         
         self.MacroTime = 0
         
+        # Control variables
+        self.loopCheckBrake = 0
+        self.lastx2 = self.lasty2 = [0.0, 0.0, 0.0, 0.0]
         # Control Reset
-        control.ResetVariable()
+        imu_control.ResetVariable()
         
         if IsResetGyro == True:
             # Config imu
@@ -153,7 +158,7 @@ class mainRun(Node):
         self.M_Pressed = True
         if(not self.UseIMU) :
             self.UseIMU = True
-            control.ResetVariable()
+            imu_control.ResetVariable()
             return
         self.UseIMU = False
         
@@ -168,7 +173,7 @@ class mainRun(Node):
         self.LSB_Pressed = True
         if(not self.IMUHeading) :
             self.IMUHeading = True
-            control.ResetVariable()
+            imu_control.ResetVariable()
             return
         self.IMUHeading = False
             
@@ -177,19 +182,30 @@ class mainRun(Node):
         lx =  gamepad.lx * NormalSpeed
         ly =  gamepad.ly * NormalSpeed * -1
         rx =  gamepad.rx * turnSpeed
+        R = Bx = By = 0
 
         # Slow movement
         ly = SlowSpeed if gamepad.dpad_up    else (-SlowSpeed if gamepad.dpad_down else ly)
         lx = SlowSpeed if gamepad.dpad_right else (-SlowSpeed if gamepad.dpad_left else lx)
+        
         if self.UseIMU :
             if self.IMUHeading :
+                self.loopCheckBrake = 0 if self.loopCheckBrake == 4 else self.loopCheckBrake
                 x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
                 y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
+                self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
+                lastx2 = sum(self.lastx2)
+                lasty2 = sum(self.lasty2)
+                
+                if (lastx2 > 0 and lasty2 > 0) and (lx == 0 and ly == 0):
+                    Bx = brake_control_x2.Calculate(lastx2)
+                    By = brake_control_y2.Calculate(lasty2)
+                    
             else :
                 x2  =  lx
                 y2  =  ly
             
-            R = control.Calculate(WrapRads(self.setpoint - self.yaw))   
+            R = imu_control.Calculate(WrapRads(self.setpoint - self.yaw))   
             if (lx == 0.0 and ly == 0.0 and rx == 0.0) and abs(R) < 0.035:
                 R = 0.0
             
@@ -204,10 +220,10 @@ class mainRun(Node):
             R  = rx
 
         D = max(abs(x2)+abs(y2)+abs(R), 1.0)
-        motor4Speed = float("{:.1f}".format((y2 + x2 - R) / D * maxSpeed))
-        motor1Speed = float("{:.1f}".format((y2 + x2 + R) / D * maxSpeed))
-        motor2Speed = float("{:.1f}".format((y2 - x2 - R) / D * maxSpeed))
-        motor3Speed = float("{:.1f}".format((y2 - x2 + R) / D * maxSpeed))
+        motor4Speed = float("{:.1f}".format((y2 + x2 - R - Bx - By) / D * maxSpeed))
+        motor1Speed = float("{:.1f}".format((y2 + x2 + R - Bx - By) / D * maxSpeed))
+        motor2Speed = float("{:.1f}".format((y2 - x2 - R + Bx - By) / D * maxSpeed))
+        motor3Speed = float("{:.1f}".format((y2 - x2 + R + Bx - By) / D * maxSpeed))
         return motor1Speed, motor2Speed, motor3Speed, motor4Speed
     
     def Slide_Transform(self):
