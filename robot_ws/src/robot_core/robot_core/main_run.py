@@ -2,6 +2,7 @@ import rclpy
 import math
 import time
 from std_msgs.msg import String
+import numpy as np
 
 from config.config import *
 from src.controller import Controller
@@ -84,7 +85,7 @@ class mainRun(Node):
         
         # Control variables
         self.loopCheckBrake = 0
-        self.lastx2 = self.lasty2 = []
+        self.lastx2 = self.lasty2 = np.arange(50)
         # Control Reset
         imu_control.ResetVariable()
         brake_control_x2.ResetVariable()
@@ -212,10 +213,10 @@ class mainRun(Node):
             y2 = ly
             R  = rx
             
-        self.loopCheckBrake = 0 if self.loopCheckBrake == 100 else self.loopCheckBrake
+        self.loopCheckBrake = 0 if self.loopCheckBrake == 50 else self.loopCheckBrake
         self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
-        lastx2 = sum(self.lastx2)
-        lasty2 = sum(self.lasty2)
+        lastx2 = np.sum(self.lastx2)
+        lasty2 = np.sum(self.lasty2)
         
         if (lastx2 > 0 or lasty2 > 0) and (lx == 0 and ly == 0):
             Bx = brake_control_x2.Calculate(lastx2)
