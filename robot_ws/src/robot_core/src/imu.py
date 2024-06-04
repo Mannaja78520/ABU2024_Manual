@@ -50,5 +50,5 @@ class IMU:
         self.yaw += WrapDegs(filter_gz * Dt)
 
         # Store the data in class attributes
-        self.ax, self.ay, self.az = self.accel_data
-        self.gx, self.gy, self.gz = self.gyro_data
+        self.ax, self.ay, self.az = map(float, self.accel_data)
+        self.gx, self.gy, self.gz = map(float, self.gyro_data)

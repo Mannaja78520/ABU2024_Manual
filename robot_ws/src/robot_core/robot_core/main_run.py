@@ -19,8 +19,8 @@ from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
 imu_control = Controller(2.32, 0.1)
-brake_control_x2 = Controller(kp = 30, ki = 1)
-brake_control_y2 = Controller(kp = 45, ki = 9, kd = 3)
+brake_control_x2 = Controller(kp = 100, ki = 1)
+brake_control_y2 = Controller(kp = 150, ki = 9, kd = 3)
 imu = IMU()
 
 # define servo
@@ -213,7 +213,7 @@ class mainRun(Node):
             y2 = ly
             R  = rx
             
-        self.loopCheckBrake = 0 if self.loopCheckBrake == 100 else self.loopCheckBrake
+        self.loopCheckBrake = 0 if self.loopCheckBrake == 50 else self.loopCheckBrake
         self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
         lastx2 = np.sum(self.lastx2)
         lasty2 = np.sum(self.lasty2)
@@ -392,8 +392,8 @@ class mainRun(Node):
         gamepad.receive_data()
         gamepad_msg.data = gamepad.received_data
         imu.read()
-        imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = imu.accel_data
-        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = imu.gx, imu.gy, imu.yaw
+        imu_msg.linear.x, imu_msg.linear.y, imu_msg.linear.z = map(float, imu.accel_data)
+        imu_msg.angular.x, imu_msg.angular.y, imu_msg.angular.z = float(imu.gx), float(imu.gy), float(imu.yaw)
         
         self.Emergency_StartStop()
         # if self.EmergencyStop :
