@@ -85,7 +85,7 @@ class mainRun(Node):
         
         # Control variables
         self.loopCheckBrake = 0
-        self.lastx2 = self.lasty2 = np.arange(50)
+        self.lastx2 = self.lasty2 = np.arange(100)
         # Control Reset
         imu_control.ResetVariable()
         brake_control_x2.ResetVariable()
@@ -213,7 +213,7 @@ class mainRun(Node):
             y2 = ly
             R  = rx
             
-        self.loopCheckBrake = 0 if self.loopCheckBrake == 50 else self.loopCheckBrake
+        self.loopCheckBrake = 0 if self.loopCheckBrake == 100 else self.loopCheckBrake
         self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
         lastx2 = np.sum(self.lastx2)
         lasty2 = np.sum(self.lasty2)
