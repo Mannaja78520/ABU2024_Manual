@@ -18,8 +18,8 @@ from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
 imu_control = Controller(2.32, 0.1)
-brake_control_x2 = Controller(kp = 1, ki = 0.006)
-brake_control_y2 = Controller(kp = 1.5, ki = 0.01, kd = 0.01)
+brake_control_x2 = Controller(kp = 10, ki = 0.1)
+brake_control_y2 = Controller(kp = 15, ki = 1, kd = 0.1)
 imu = IMU()
 
 # define servo
@@ -84,7 +84,7 @@ class mainRun(Node):
         
         # Control variables
         self.loopCheckBrake = 0
-        self.lastx2 = self.lasty2 = [0.0, 0.0, 0.0, 0.0]
+        self.lastx2 = self.lasty2 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         # Control Reset
         imu_control.ResetVariable()
         brake_control_x2.ResetVariable()
@@ -192,7 +192,7 @@ class mainRun(Node):
         
         if self.UseIMU :
             if self.IMUHeading :
-                self.loopCheckBrake = 0 if self.loopCheckBrake == 4 else self.loopCheckBrake
+                self.loopCheckBrake = 0 if self.loopCheckBrake == 10 else self.loopCheckBrake
                 x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
                 y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
                 self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
