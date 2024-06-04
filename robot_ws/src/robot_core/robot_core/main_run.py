@@ -185,7 +185,7 @@ class mainRun(Node):
         lx =  gamepad.lx * NormalSpeed
         ly =  gamepad.ly * NormalSpeed * -1
         rx =  gamepad.rx * turnSpeed
-        # R = Bx = By = 0
+        Bx = By = 0
 
         # Slow movement
         ly = SlowSpeed if gamepad.dpad_up    else (-SlowSpeed if gamepad.dpad_down else ly)
