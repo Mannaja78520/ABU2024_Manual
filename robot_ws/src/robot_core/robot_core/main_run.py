@@ -192,17 +192,8 @@ class mainRun(Node):
         
         if self.UseIMU :
             if self.IMUHeading :
-                self.loopCheckBrake = 0 if self.loopCheckBrake == 100 else self.loopCheckBrake
                 x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
                 y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
-                self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
-                lastx2 = sum(self.lastx2)
-                lasty2 = sum(self.lasty2)
-                
-                if (lastx2 > 0 or lasty2 > 0) and (lx == 0 and ly == 0):
-                    Bx = brake_control_x2.Calculate(lastx2)
-                    By = brake_control_y2.Calculate(lasty2)
-                    
             else :
                 x2  =  lx
                 y2  =  ly
@@ -220,6 +211,15 @@ class mainRun(Node):
             x2 = lx
             y2 = ly
             R  = rx
+            
+        self.loopCheckBrake = 0 if self.loopCheckBrake == 100 else self.loopCheckBrake
+        self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
+        lastx2 = sum(self.lastx2)
+        lasty2 = sum(self.lasty2)
+        
+        if (lastx2 > 0 or lasty2 > 0) and (lx == 0 and ly == 0):
+            Bx = brake_control_x2.Calculate(lastx2)
+            By = brake_control_y2.Calculate(lasty2)
 
         D = max(abs(x2)+abs(y2)+abs(R), 1.0)
         motor4Speed = float("{:.1f}".format((y2 + x2 - R - Bx - By) / D * maxSpeed))
