@@ -192,7 +192,7 @@ class mainRun(Node):
         
         if self.UseIMU :
             if self.IMUHeading :
-                self.loopCheckBrake = 0 if self.loopCheckBrake == 10 else self.loopCheckBrake
+                self.loopCheckBrake = 0 if self.loopCheckBrake == 30 else self.loopCheckBrake
                 x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
                 y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
                 self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
