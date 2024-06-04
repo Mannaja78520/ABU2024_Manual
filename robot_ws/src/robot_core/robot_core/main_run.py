@@ -84,7 +84,7 @@ class mainRun(Node):
         
         # Control variables
         self.loopCheckBrake = 0
-        self.lastx2 = self.lasty2 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.lastx2 = self.lasty2 = []
         # Control Reset
         imu_control.ResetVariable()
         brake_control_x2.ResetVariable()
@@ -192,7 +192,7 @@ class mainRun(Node):
         
         if self.UseIMU :
             if self.IMUHeading :
-                self.loopCheckBrake = 0 if self.loopCheckBrake == 60 else self.loopCheckBrake
+                self.loopCheckBrake = 0 if self.loopCheckBrake == 100 else self.loopCheckBrake
                 x2  =  (math.cos(self.yaw) * lx) - (math.sin(self.yaw) * ly)
                 y2  =  (math.sin(self.yaw) * lx) + (math.cos(self.yaw) * ly)
                 self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
