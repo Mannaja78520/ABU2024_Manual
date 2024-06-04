@@ -185,7 +185,7 @@ class mainRun(Node):
         lx =  gamepad.lx * NormalSpeed
         ly =  gamepad.ly * NormalSpeed * -1
         rx =  gamepad.rx * turnSpeed
-        R = Bx = By = 0
+        # R = Bx = By = 0
 
         # Slow movement
         ly = SlowSpeed if gamepad.dpad_up    else (-SlowSpeed if gamepad.dpad_down else ly)
@@ -213,14 +213,14 @@ class mainRun(Node):
             y2 = ly
             R  = rx
             
-        self.loopCheckBrake = 0 if self.loopCheckBrake == 50 else self.loopCheckBrake
-        self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
-        lastx2 = np.sum(self.lastx2)
-        lasty2 = np.sum(self.lasty2)
+        # self.loopCheckBrake = 0 if self.loopCheckBrake == 50 else self.loopCheckBrake
+        # self.lastx2[self.loopCheckBrake], self.lasty2[self.loopCheckBrake] = x2, y2
+        # lastx2 = np.sum(self.lastx2)
+        # lasty2 = np.sum(self.lasty2)
         
-        if (lastx2 > 0 or lasty2 > 0) and (lx == 0 and ly == 0):
-            Bx = brake_control_x2.Calculate(lastx2)
-            By = brake_control_y2.Calculate(lasty2)
+        # if (lastx2 > 0 or lasty2 > 0) and (lx == 0 and ly == 0):
+        #     Bx = brake_control_x2.Calculate(lastx2)
+        #     By = brake_control_y2.Calculate(lasty2)
 
         D = max(abs(x2)+abs(y2)+abs(R), 1.0)
         motor4Speed = float("{:.1f}".format((y2 + x2 - R - Bx - By) / D * maxSpeed))
