@@ -1,7 +1,13 @@
 import rclpy
+from rclpy import qos
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from std_msgs.msg import String
+from adafruit_servokit import ServoKit
+import numpy as np
+import lgpio
 import math
 import time
-from std_msgs.msg import String
 
 from config.config import *
 from src.controller import Controller
@@ -9,15 +15,9 @@ from src.utilize import *
 from src.gamepad_zigbee import gamepad_Zigbee
 from src.imu import IMU
 
-from adafruit_servokit import ServoKit
-import lgpio
-
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
-control = Controller(2.32, 0.1)
+imu_control = Controller(2.32, 0.1)
 imu = IMU()
 
 # define servo
@@ -80,8 +80,10 @@ class mainRun(Node):
         
         self.MacroTime = 0
         
+        # Control variables
+        self.loopCheckBrake = 0
         # Control Reset
-        control.ResetVariable()
+        imu_control.ResetVariable()
         
         if IsResetGyro == True:
             # Config imu
@@ -153,7 +155,7 @@ class mainRun(Node):
         self.M_Pressed = True
         if(not self.UseIMU) :
             self.UseIMU = True
-            control.ResetVariable()
+            imu_control.ResetVariable()
             return
         self.UseIMU = False
         
@@ -168,7 +170,7 @@ class mainRun(Node):
         self.LSB_Pressed = True
         if(not self.IMUHeading) :
             self.IMUHeading = True
-            control.ResetVariable()
+            imu_control.ResetVariable()
             return
         self.IMUHeading = False
             
@@ -189,7 +191,7 @@ class mainRun(Node):
                 x2  =  lx
                 y2  =  ly
             
-            R = control.Calculate(WrapRads(self.setpoint - self.yaw))   
+            R = imu_control.Calculate(WrapRads(self.setpoint - self.yaw))   
             if (lx == 0.0 and ly == 0.0 and rx == 0.0) and abs(R) < 0.035:
                 R = 0.0
             
@@ -388,7 +390,7 @@ class mainRun(Node):
             self.AdjustArm()
             
             if not(self.ISGripSlide or self.ISGripUP):
-                self.keepBall()         
+                self.keepBall()
             
             movement_msg.linear.x, movement_msg.linear.y, movement_msg.linear.z, movement_msg.angular.x = self.MoveRobot()
             movement_msg.angular.y = float(self.ISBallSpin)
