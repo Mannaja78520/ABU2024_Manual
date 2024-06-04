@@ -199,7 +199,7 @@ class mainRun(Node):
                 lastx2 = sum(self.lastx2)
                 lasty2 = sum(self.lasty2)
                 
-                if (lastx2 > 0 and lasty2 > 0) and (lx == 0 and ly == 0):
+                if (lastx2 > 0 or lasty2 > 0) and (lx == 0 and ly == 0):
                     Bx = brake_control_x2.Calculate(lastx2)
                     By = brake_control_y2.Calculate(lasty2)
                     
