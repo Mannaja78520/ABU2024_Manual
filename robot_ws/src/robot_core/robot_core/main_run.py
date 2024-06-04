@@ -18,8 +18,8 @@ from rclpy import qos
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
 imu_control = Controller(2.32, 0.1)
-brake_control_x2 = Controller(kp = 10, ki = 0.1)
-brake_control_y2 = Controller(kp = 15, ki = 1, kd = 0.1)
+brake_control_x2 = Controller(kp = 30, ki = 1)
+brake_control_y2 = Controller(kp = 45, ki = 9, kd = 3)
 imu = IMU()
 
 # define servo
