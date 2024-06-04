@@ -40,7 +40,7 @@ class Controller:
         self.CurrentTime = time.time()
         self.Dt = self.CurrentTime - self.LastTime
         self.LastTime  = self.CurrentTime
-        self.Error = 0 if NormalizeRads(error) == 0 else error
+        # self.Error = 0 if NormalizeRads(error) == 0 else error
         self.Integral += self.Error * self.Dt
         self.Integral = 0 if self.Error == 0 else clip(self.Integral, -1, 1)
         Derivative = (self.Error - self.LastError) / self.Dt
