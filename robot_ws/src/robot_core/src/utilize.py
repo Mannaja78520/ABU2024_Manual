@@ -33,10 +33,10 @@ def NormalizeDegs(degs):
     return degs
 
 def sig_num(number):
-    return 0 if number == 0 else (-1 if number < 0 else 1)
+    return (number > 0) - (number < 0)
 
 def clip(value, min_val, max_val):
     return max(min(value, max_val), min_val)
 
 def AtTargetRange(number, target, range):
-    return bool(target - range < number and number < target + range)
+    return abs(number - target) < range

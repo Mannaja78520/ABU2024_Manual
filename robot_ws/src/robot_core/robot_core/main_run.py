@@ -17,7 +17,7 @@ from src.imu import IMU
 
 
 gamepad = gamepad_Zigbee('/dev/ttyUSB1', 230400)
-imu_control = Controller(2.32, 0.1)
+imu_control = Controller(2.32, 0.1, errorTolerance= To_Radians(0.5))
 imu = IMU()
 
 # define servo
