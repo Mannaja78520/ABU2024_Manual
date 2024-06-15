@@ -27,6 +27,9 @@ setup(
     entry_points={
         'console_scripts': [
         'runRobot = robot_core.main_run:main',
+        'testKeyboard = robot_core.test_keyboard:main',
+        'runOnPI = robot_core.teach_children_pi:main',
+        'runOnPC = robot_core.teach_childrenRos:main',
         ],
     },
 )
