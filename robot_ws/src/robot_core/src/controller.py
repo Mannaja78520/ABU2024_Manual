@@ -1,4 +1,6 @@
-from src.utilize import *
+# from src.utilize import *
+from utilize import *
+
 import time
 
 class Controller:
@@ -39,12 +41,14 @@ class Controller:
         self.Dt = self.CurrentTime - self.LastTime
         self.LastTime  = self.CurrentTime
         Is_Error_In_Tolerance = AtTargetRange(error, 0, self.ErrorTolerance)
-        self.Error = error if not Is_Error_In_Tolerance else 0
+        if Is_Error_In_Tolerance :
+            return 0
+        self.Error = error
         self.Integral += self.Error * self.Dt
-        self.Integral = clip(self.Integral, -1, 1) if not Is_Error_In_Tolerance else 0
+        self.Integral = clip(self.Integral, -1, 1)
         Derivative = (self.Error - self.LastError) / self.Dt if self.Dt != 0 else 0
         self.LastError = self.Error
-        BaseSpeed = self.baseSpeed * sig_num(self.Error) if not Is_Error_In_Tolerance else 0
+        BaseSpeed = self.baseSpeed * sig_num(self.Error)
         return (self.Error * self.kp) + (self.Integral * self.ki) + (Derivative * self.kd) + (self.Setpoint * self.kf) + BaseSpeed
     
     def ResetVariable(self):
@@ -53,22 +57,15 @@ class Controller:
         self.CurrentTime = time.time()
         self.LastTime = self.CurrentTime
         
-    def Reset(self, kp = 0, ki = 0, kd = 0, kf = 0, baseSpeed = 0):
+    def Reset(self, kp = None, ki = None, kd = None, kf = None, baseSpeed = None):
         # pidf Setting
-        if kp != 0 or ki != 0 or kd != 0 or kf != 0 or baseSpeed != 0:
-            if kp == 0:
-                kp = self.kp
-            if ki == 0:
-                ki = self.ki
-            if kd == 0:
-                kd = self.kd
-            if kf == 0:
-                kf = self.kf
-            if baseSpeed == 0:
-                baseSpeed = self.baseSpeed
-            self.ConfigPIDF(kp, ki, kd, kf, baseSpeed)
+        kp = self.kp if kp == None else kp
+        ki = self.ki if ki == None else ki
+        kd = self.kd if kd == None else kd
+        kf = self.kf if kf == None else kf
+        baseSpeed = self.baseSpeed if baseSpeed == None else baseSpeed
+        self.ConfigPIDF(kp, ki, kd, kf, baseSpeed)
             
-        
         # pid variable
         self.Setpoint = 0
         self.Error = 0
@@ -77,4 +74,3 @@ class Controller:
         self.Dt = 0
         self.CurrentTime = time.time()
         self.LastTime = self.CurrentTime
-        
